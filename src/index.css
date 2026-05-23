@@ -1,0 +1,144 @@
+@import url("https://rsms.me/inter/inter.css");
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* ---------- Themed color tokens ----------
+   Tailwind reads these as rgb(var(--c-*) / <alpha-value>) — so each value is
+   3 space-separated channels (no rgb() wrapper).
+   Tokens come in two groups:
+     • Themed     — declared on :root AND .dark with different values.
+     • Static     — declared only on :root (no override in .dark).
+   The static group covers always-dark surfaces (primary, footer-bg, on-dark*)
+   and pastel chip backgrounds (surface-yellow) that are paired with static
+   text colors and must stay readable regardless of theme. */
+@layer base {
+  :root {
+    /* themed — surfaces */
+    --c-canvas: 255 255 255;
+    --c-surface: 247 248 250;
+    --c-surface-soft: 250 251 252;
+    --c-surface-pricing-featured: 245 243 255;
+    --c-hairline: 224 226 232;
+    --c-hairline-soft: 238 240 243;
+    --c-hairline-strong: 199 202 213;
+
+    /* themed — text */
+    --c-ink: 28 28 30;
+    --c-ink-deep: 5 0 56;
+    --c-charcoal: 44 44 52;
+    --c-slate: 85 90 106;
+    --c-steel: 107 111 126;
+    --c-stone: 142 145 160;
+    --c-muted: 165 168 181;
+
+    /* static — always-dark surfaces, used for elements that must stay dark
+       in both modes (primary pill, dark CTA banner, promo strip, footer)
+       OR paired with static text colors on pastel tints. */
+    --c-primary: 28 28 30;
+    --c-on-primary: 255 255 255;
+    --c-footer-bg: 28 28 30;
+    --c-on-dark: 255 255 255;
+    --c-on-dark-muted: 165 168 181;
+    --c-surface-yellow: 255 248 224;
+
+    color-scheme: light;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    text-rendering: optimizeLegibility;
+    font-synthesis: none;
+    scroll-behavior: smooth;
+  }
+
+  .dark {
+    /* themed — surfaces */
+    --c-canvas: 14 14 16;
+    --c-surface: 22 22 25;
+    --c-surface-soft: 18 18 21;
+    --c-surface-pricing-featured: 30 28 60;
+    --c-hairline: 40 40 46;
+    --c-hairline-soft: 30 30 35;
+    --c-hairline-strong: 60 60 70;
+
+    /* themed — text */
+    --c-ink: 245 245 247;
+    --c-ink-deep: 255 255 255;
+    --c-charcoal: 224 224 227;
+    --c-slate: 184 186 195;
+    --c-steel: 150 152 165;
+    --c-stone: 122 124 135;
+    --c-muted: 90 92 102;
+
+    /* footer is the one "always-dark" surface that goes even darker in dark
+       mode — gives the bottom of the page a "well" feel. */
+    --c-footer-bg: 7 7 9;
+
+    color-scheme: dark;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    :root {
+      scroll-behavior: auto;
+    }
+  }
+
+  html,
+  body,
+  #root {
+    height: 100%;
+  }
+
+  body {
+    margin: 0;
+    font-family: "Roobert PRO", "Inter", "Noto Sans", -apple-system,
+      BlinkMacSystemFont, sans-serif;
+    background: rgb(var(--c-canvas));
+    color: rgb(var(--c-ink));
+    font-feature-settings: "cv11", "ss01", "ss03";
+    transition:
+      background-color 200ms ease,
+      color 200ms ease;
+  }
+
+  @supports (font-variation-settings: normal) {
+    body {
+      font-family: "Roobert PRO", "Inter var", "Inter", "Noto Sans",
+        -apple-system, BlinkMacSystemFont, sans-serif;
+    }
+  }
+}
+
+@layer utilities {
+  /* Apply on any container with a static bright background (pastel cards,
+     yellow chips, brand-yellow checklists). Resets the themed text vars
+     to their light-mode values so every text-charcoal/text-slate/text-ink
+     descendant stays dark against the bright pastel, even in dark mode.
+     Surfaces are NOT reset — pastel cards don't typically nest themed surfaces. */
+  .pastel {
+    --c-ink: 28 28 30;
+    --c-ink-deep: 5 0 56;
+    --c-charcoal: 44 44 52;
+    --c-slate: 85 90 106;
+    --c-steel: 107 111 126;
+    --c-stone: 142 145 160;
+    --c-muted: 165 168 181;
+  }
+
+  .bg-grid-yellow {
+    background-image: radial-gradient(
+      circle at 1px 1px,
+      rgba(255, 208, 47, 0.35) 1px,
+      transparent 0
+    );
+    background-size: 24px 24px;
+  }
+
+  .dark .bg-grid-yellow {
+    background-image: radial-gradient(
+      circle at 1px 1px,
+      rgba(255, 208, 47, 0.18) 1px,
+      transparent 0
+    );
+  }
+}

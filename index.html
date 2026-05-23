@@ -1,0 +1,76 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="theme-color" content="#ffd02f" />
+    <!-- Favicons: square mini logo. Browsers that honor media-query'd icons
+         (Safari, Chrome, Firefox on supported platforms) will pick the right
+         contrast for the user's tab background; the unscoped first link is
+         the universal fallback. -->
+    <link rel="icon" type="image/png" sizes="any" href="/once-light-mini.png" />
+    <link rel="icon" type="image/png" media="(prefers-color-scheme: light)" href="/once-light-mini.png" />
+    <link rel="icon" type="image/png" media="(prefers-color-scheme: dark)" href="/once-dark-mini.png" />
+    <link rel="apple-touch-icon" href="/once-light-mini.png" />
+    <link rel="preconnect" href="https://rsms.me/" />
+    <link rel="stylesheet" href="https://rsms.me/inter/inter.css" />
+
+    <title>once — AI-powered onboarding & training for bank employees</title>
+    <meta
+      name="description"
+      content="once: AI knowledge assistant, role-based learning, mock playground and fraud simulator for bank employees. Train smarter. Reduce risk. Improve service."
+    />
+    <meta
+      name="keywords"
+      content="once, bank training, employee onboarding, fraud simulator, AI knowledge assistant, bank LMS, Uzbekistan banking"
+    />
+
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content="once" />
+    <meta
+      property="og:title"
+      content="once — AI-powered onboarding & training for banks"
+    />
+    <meta
+      property="og:description"
+      content="Train smarter. Reduce risk. Improve service. AI knowledge assistant, mock playground and fraud simulator for bank employees."
+    />
+    <meta property="og:locale" content="en_US" />
+    <meta property="og:locale:alternate" content="uz_UZ" />
+    <meta property="og:locale:alternate" content="ru_RU" />
+
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta
+      name="twitter:title"
+      content="once — AI-powered onboarding & training for banks"
+    />
+    <meta
+      name="twitter:description"
+      content="Train smarter. Reduce risk. Improve service. AI knowledge assistant, mock playground and fraud simulator for bank employees."
+    />
+
+    <script>
+      // Apply stored theme before first paint so we don't flash light → dark.
+      // Mirrors src/lib/theme.ts:getInitialTheme. Inline on purpose.
+      (function () {
+        try {
+          var stored = localStorage.getItem("once.theme");
+          var theme =
+            stored === "light" || stored === "dark"
+              ? stored
+              : matchMedia("(prefers-color-scheme: dark)").matches
+                ? "dark"
+                : "light";
+          if (theme === "dark") document.documentElement.classList.add("dark");
+          document.documentElement.dataset.theme = theme;
+        } catch (e) {
+          /* private mode — ignore */
+        }
+      })();
+    </script>
+  </head>
+  <body>
+    <div id="root"></div>
+    <script type="module" src="/src/main.tsx"></script>
+  </body>
+</html>
