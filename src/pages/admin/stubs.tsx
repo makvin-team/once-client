@@ -14,16 +14,6 @@ export function AdminOrg() {
   );
 }
 
-export function AdminKnowledge() {
-  return (
-    <StubPage
-      eyebrow="Knowledge base"
-      title="Bank hujjatlari va knowledge base"
-      description="PDF, DOCX, TXT, Markdown, HTML yuklash. Indexing status, version, visibility."
-    />
-  );
-}
-
 export function AdminAIAssistant() {
   return (
     <StubPage
