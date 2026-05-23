@@ -6,18 +6,18 @@ import { useAuth } from "../../auth/AuthProvider";
 import { useT } from "../../i18n";
 import { track } from "../../lib/analytics";
 import { cn } from "../../lib/cn";
-import { mockAIRespond, titleFromPrompt } from "../../lib/mockAI";
 import {
   type Message,
   type Session,
   type SessionGroup,
   groupOf,
-  loadSessions,
   makeId,
   makeNewSession,
-  saveSessions,
-  seedSessions,
+  fetchSessions,
+  fetchMessages,
 } from "../../lib/assistantStore";
+import { streamChat, deleteConversation } from "../../lib/assistantApi";
+import { titleFromPrompt } from "../../lib/mockAI";
 
 const GROUP_ORDER: SessionGroup[] = ["today", "yesterday", "thisWeek", "older"];
 
@@ -28,13 +28,8 @@ export function LearnerAssistant() {
 
   const userId = user?.id ?? "anonymous";
 
-  const [sessions, setSessions] = useState<Session[]>(() => {
-    const existing = loadSessions(userId);
-    return existing.length > 0 ? existing : seedSessions(userId);
-  });
-  const [activeId, setActiveId] = useState<string | null>(
-    () => sessions[0]?.id ?? null,
-  );
+  const [sessions, setSessions] = useState<Session[]>([]);
+  const [activeId, setActiveId] = useState<string | null>(null);
   const [draft, setDraft] = useState("");
   const [pending, setPending] = useState(false);
   const [showSessionsOnMobile, setShowSessionsOnMobile] = useState(false);
@@ -47,9 +42,46 @@ export function LearnerAssistant() {
     [sessions, activeId],
   );
 
+  // Initial load: fetch the user's conversation list from the server.
   useEffect(() => {
-    saveSessions(userId, sessions);
-  }, [sessions, userId]);
+    let cancelled = false;
+    fetchSessions()
+      .then((loaded) => {
+        if (cancelled) return;
+        setSessions(loaded);
+        setActiveId(loaded[0]?.id ?? null);
+      })
+      .catch(() => {
+        /* leave empty; user can start a new chat */
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [userId]);
+
+  // Lazily fetch messages when an unloaded session becomes active.
+  useEffect(() => {
+    const session = sessions.find((s) => s.id === activeId);
+    if (!session || session.loaded || !session.conversationId) return;
+    let cancelled = false;
+    fetchMessages(session.conversationId)
+      .then((messages) => {
+        if (cancelled) return;
+        setSessions((prev) =>
+          prev.map((s) =>
+            s.id === session.id ? { ...s, messages, loaded: true } : s,
+          ),
+        );
+      })
+      .catch(() => {
+        setSessions((prev) =>
+          prev.map((s) => (s.id === session.id ? { ...s, loaded: true } : s)),
+        );
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [activeId, sessions]);
 
   // Auto-scroll to bottom when messages change.
   useEffect(() => {
@@ -106,32 +138,77 @@ export function LearnerAssistant() {
       });
       setPending(true);
 
-      // Simulated AI latency, then attach the assistant reply.
-      const delay = 700 + Math.random() * 800;
-      window.setTimeout(() => {
-        const reply = mockAIRespond(prompt);
-        const assistantMsg: Message = {
-          id: makeId(),
-          role: "assistant",
-          text: reply.text,
-          citations: reply.citations,
-          followUps: reply.followUps,
-          createdAt: new Date().toISOString(),
-        };
+      // Insert an empty assistant message we append streamed tokens to.
+      const assistantId = makeId();
+      setSessions((prev) =>
+        prev.map((s) =>
+          s.id === session!.id
+            ? {
+                ...s,
+                messages: [
+                  ...s.messages,
+                  {
+                    id: assistantId,
+                    role: "assistant",
+                    text: "",
+                    createdAt: new Date().toISOString(),
+                  } as Message,
+                ],
+              }
+            : s,
+        ),
+      );
+
+      const patchAssistant = (patch: (m: Message) => Message) =>
         setSessions((prev) =>
           prev.map((s) =>
             s.id === session!.id
               ? {
                   ...s,
-                  messages: [...s.messages, assistantMsg],
+                  messages: s.messages.map((m) =>
+                    m.id === assistantId ? patch(m) : m,
+                  ),
                   updatedAt: new Date().toISOString(),
                 }
               : s,
           ),
         );
-        setPending(false);
-        textareaRef.current?.focus();
-      }, delay);
+
+      streamChat(
+        { conversationId: session!.conversationId, message: prompt },
+        {
+          onChunk: (token) =>
+            patchAssistant((m) => ({ ...m, text: m.text + token })),
+          onSources: (citations) =>
+            patchAssistant((m) => ({ ...m, citations })),
+          onDone: (conversationId, title) => {
+            setSessions((prev) =>
+              prev.map((s) =>
+                s.id === session!.id
+                  ? {
+                      ...s,
+                      conversationId,
+                      title: s.title || title || s.title,
+                      loaded: true,
+                      updatedAt: new Date().toISOString(),
+                    }
+                  : s,
+              ),
+            );
+            setPending(false);
+            textareaRef.current?.focus();
+          },
+          onError: () => {
+            patchAssistant((m) => ({
+              ...m,
+              text:
+                m.text ||
+                "Kechirasiz, javobni olishda xatolik yuz berdi. Qayta urinib ko'ring.",
+            }));
+            setPending(false);
+          },
+        },
+      );
     },
     [activeSession, pending],
   );
@@ -146,11 +223,17 @@ export function LearnerAssistant() {
   }
 
   function deleteSession(id: string) {
+    const session = sessions.find((s) => s.id === id);
     setSessions((prev) => {
       const next = prev.filter((s) => s.id !== id);
       if (activeId === id) setActiveId(next[0]?.id ?? null);
       return next;
     });
+    if (session?.conversationId) {
+      deleteConversation(session.conversationId).catch(() => {
+        /* best-effort; row already removed from UI */
+      });
+    }
   }
 
   function setFeedback(messageId: string, value: "up" | "down") {
