@@ -4,7 +4,7 @@ export const ru: LandingContent = {
   meta: {
     title: "once — AI-онбординг и обучение для сотрудников банков",
     description:
-      "once: AI-ассистент по внутренним документам, role-based обучение, mock playground и fraud simulator. Train smarter. Reduce risk. Improve service.",
+      "once: AI-ассистент по внутренним документам, role-based обучение, mock playground и fraud simulator для сотрудников банка.",
     siteName: "once",
   },
   brand: {
@@ -41,7 +41,7 @@ export const ru: LandingContent = {
     title: "AI-онбординг и обучение для сотрудников банка.",
     titleHighlight: "AI-онбординг",
     subtitle:
-      "Обучайте сотрудников банка быстрее, помогайте им находить ответы во внутренних документах, тренируйте реальные процессы в безопасном симуляторе и снижайте fraud-риски — на одной платформе.",
+      "Быстрее онбординг, мгновенные ответы по внутренним документам, безопасная практика реальных процессов и снижение fraud-рисков — одна платформа.",
     primaryCta: "Запросить демо",
     secondaryCta: "Возможности",
     primaryCtaHref: "#demo",
@@ -79,7 +79,7 @@ export const ru: LandingContent = {
       {
         tone: "canvas",
         title: "Долгая адаптация",
-        body: "Новые сотрудники неделями адаптируются ко внутренним процессам.",
+        body: "Новые сотрудники адаптируются ко внутренним процессам неделями.",
       },
       {
         tone: "yellow",
@@ -89,7 +89,7 @@ export const ru: LandingContent = {
       {
         tone: "canvas",
         title: "Узкое место — сеньоры",
-        body: "Сеньоры тратят часы на одни и те же повторяющиеся вопросы.",
+        body: "Сеньоры тратят часы на одни и те же вопросы.",
       },
       {
         tone: "coral",
@@ -116,7 +116,7 @@ export const ru: LandingContent = {
   solution: {
     eyebrow: "Решение",
     title: "Одна платформа. От знаний дня 1 до мастерства дня 90.",
-    body: "once объединяет AI knowledge base, role-based learning plan, mock playground, fraud simulator, progress tracking и HR analytics в одной платформе для сотрудников банка.",
+    body: "once объединяет AI knowledge base, role-based learning, mock playground, fraud simulator, progress tracking и HR analytics — в одной платформе для банка.",
     items: [
       {
         title: "AI-знания",

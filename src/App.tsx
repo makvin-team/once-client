@@ -25,12 +25,10 @@ import {
 import { AdminLayout } from "./pages/admin/AdminLayout";
 import { AdminDashboard } from "./pages/admin/Dashboard";
 import { AdminUsers } from "./pages/admin/Users";
+import { AdminFraudScenarios } from "./pages/admin/FraudScenarios";
 import {
   AdminAIAssistant,
   AdminAssignments,
-  AdminAudit,
-  AdminFraudScenarios,
-  AdminIntegration,
   AdminKnowledge,
   AdminMockScenarios,
   AdminModules,
@@ -103,9 +101,7 @@ function App() {
                 <Route path="progress" element={<AdminProgress />} />
                 <Route path="skills" element={<AdminSkills />} />
                 <Route path="reports" element={<AdminReports />} />
-                <Route path="integration" element={<AdminIntegration />} />
                 <Route path="notifications" element={<AdminNotifications />} />
-                <Route path="audit" element={<AdminAudit />} />
                 <Route path="settings" element={<AdminSettings />} />
               </Route>
             </Route>

@@ -5,7 +5,7 @@ export const uzCyrl: LandingContent = {
   meta: {
     title: "once — банк ходимлари учун АI онбординг ва тренинг",
     description:
-      "once: банк ходимлари учун AI knowledge assistant, role-based learning, mock playground ва fraud simulator. Train smarter. Reduce risk. Improve service.",
+      "once: банк ходимлари учун AI knowledge assistant, role-based learning, mock playground ва fraud simulator.",
     siteName: "once",
   },
   brand: {
@@ -42,7 +42,7 @@ export const uzCyrl: LandingContent = {
     title: "Банк ходимлари учун АI асосидаги онбординг ва тренинг.",
     titleHighlight: "АI асосидаги",
     subtitle:
-      "Банк ходимларини тезроқ ўқитинг, ички ҳужжатлар бўйича АI ёрдам беринг, реал жараёнларни хавфсиз симуляторда машқ қилдиринг ва fraud рискларни камайтиринг — бир платформада.",
+      "Тезроқ онбординг, ички ҳужжатлардан тез жавоб, хавфсиз жараён машқи ва камроқ fraud риски — бир платформа.",
     primaryCta: "Демо сўраш",
     secondaryCta: "Имкониятларни кўриш",
     primaryCtaHref: "#demo",
@@ -80,7 +80,7 @@ export const uzCyrl: LandingContent = {
       {
         tone: "canvas",
         title: "Секин мослашув",
-        body: "Янги ходимлар ички жараёнларга секин мослашади ва ҳафталар йўқотилади.",
+        body: "Янги ходимлар ички жараёнларга ҳафталаб мослашади.",
       },
       {
         tone: "yellow",
@@ -117,7 +117,7 @@ export const uzCyrl: LandingContent = {
   solution: {
     eyebrow: "Ечим",
     title: "Битта платформа. 1-кундан 90-кун маҳоратигача.",
-    body: "once банк ходимлари учун AI knowledge base, role-based learning plan, mock playground, fraud simulator, progress tracking ва HR analyticsни битта платформада бирлаштиради.",
+    body: "once банк ходимлари учун AI knowledge base, role-based learning, mock playground, fraud simulator, progress tracking ва HR analytics'ни битта платформада бирлаштиради.",
     items: [
       {
         title: "AI билим",
@@ -465,7 +465,7 @@ export const uzCyrl: LandingContent = {
       view: "Кўриш",
       upload: "Юклаш",
       assign: "Бириктириш",
-      publish: "Publish",
+      publish: "Нашр этиш",
     },
     assistant: {
       title: "AI Knowledge Assistant",
@@ -505,7 +505,7 @@ export const uzCyrl: LandingContent = {
       plans: "Ўқув режалар",
       assistant: "AI ёрдамчи",
       playground: "Mock playground",
-      dialog: "Мижоз симуляторм",
+      dialog: "Мижоз симулятори",
       fraud: "Fraud simulator",
       progress: "Менинг прогрессим",
       notifications: "Билдиришномалар",
@@ -563,7 +563,7 @@ export const uzCyrl: LandingContent = {
         avgScore: "Ўрт. балл",
         attempts: "Урин.",
         updated: "Янгиланган",
-        actions: "Actions",
+        actions: "Ҳаракатлар",
       },
       actions: {
         start: "Бошлаш",
@@ -624,15 +624,15 @@ export const uzCyrl: LandingContent = {
           phishing: {
             sender: "Юборувчи",
             received: "Қабул қилинди",
-            link: "Link",
-            attachment: "Attachment",
+            link: "Ҳавола",
+            attachment: "Бириктирма",
           },
           transaction: {
             customer: "Мижоз",
             accountAge: "Ҳисоб ёши",
             amount: "Сумма",
-            destination: "Destination",
-            frequency: "Тезлик",
+            destination: "Манзил",
+            frequency: "Частота",
             description: "Тавсиф",
             usualBehavior: "Одатдаги хулқ",
           },
@@ -656,7 +656,7 @@ export const uzCyrl: LandingContent = {
             channel: "Канал",
             requestedAction: "Талаб",
             pressureTactic: "Босим тактикаси",
-            policyHint: "Ички полиция",
+            policyHint: "Ички сиёсат",
           },
           aml: {
             businessType: "Бизнес тури",
@@ -674,7 +674,7 @@ export const uzCyrl: LandingContent = {
         decision: {
           eyebrow: "Якуний қарор",
           validation: "Камида битта қарор танланг.",
-          submitCta: "Submit қилиш",
+          submitCta: "Тасдиқлаш",
         },
         result: {
           passedTitle: "Муваффақиятли ўтдингиз",
@@ -706,7 +706,7 @@ export const uzCyrl: LandingContent = {
         result: "Натижа",
         detected: "Топилган флаг",
         missed: "Ўтказ. юб.",
-        action: "Action",
+        action: "Ҳаракат",
         viewResult: "Натижани кўриш",
         retry: "Қайта уриниш",
         attemptedAt: "Сана",

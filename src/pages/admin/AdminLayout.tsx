@@ -47,13 +47,6 @@ export function AdminLayout() {
         { to: "/admin/reports", label: a.reports, icon: <Icon.Trophy />, permission: "report.export" },
       ],
     },
-    {
-      title: a.systemTitle,
-      items: [
-        { to: "/admin/integration", label: a.integration, icon: <Icon.Plug />, permission: "integration.manage" },
-        { to: "/admin/audit", label: a.audit, icon: <Icon.Audit />, permission: "audit.read" },
-      ],
-    },
   ];
 
   return <AppShell sections={sections} />;

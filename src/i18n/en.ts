@@ -4,7 +4,7 @@ export const en: LandingContent = {
   meta: {
     title: "once — AI-powered onboarding & training for bank employees",
     description:
-      "once: AI knowledge assistant, role-based learning, mock playground and fraud simulator for bank employees. Train smarter. Reduce risk. Improve service.",
+      "once: AI knowledge assistant, role-based learning, mock playground and fraud simulator for bank employees.",
     siteName: "once",
   },
   brand: {
@@ -41,7 +41,7 @@ export const en: LandingContent = {
     title: "AI-powered onboarding and training for bank employees.",
     titleHighlight: "AI-powered",
     subtitle:
-      "Train bank staff faster, answer their questions from internal documents, let them practice real workflows safely, and reduce fraud risk — on one platform.",
+      "Faster staff training, instant answers from internal documents, safe workflow practice, less fraud risk — one platform.",
     primaryCta: "Request Demo",
     secondaryCta: "View Features",
     primaryCtaHref: "#demo",
@@ -89,7 +89,7 @@ export const en: LandingContent = {
       {
         tone: "canvas",
         title: "Senior bottleneck",
-        body: "Senior specialists spend hours answering the same questions.",
+        body: "Senior specialists waste hours on repeat questions.",
       },
       {
         tone: "coral",
@@ -116,7 +116,7 @@ export const en: LandingContent = {
   solution: {
     eyebrow: "The solution",
     title: "One platform. From day-one knowledge to day-90 mastery.",
-    body: "once unifies an AI knowledge base, role-based learning, a mock playground, a fraud simulator, progress tracking and HR analytics for bank employees — in a single workspace.",
+    body: "once unifies AI knowledge base, role-based learning, mock playground, fraud simulator, progress tracking and HR analytics — one workspace for bank employees.",
     items: [
       {
         title: "AI knowledge",

@@ -29,10 +29,9 @@ import {
   type RedFlagOption,
   mockFraudScenarios,
   mockLearnerAttempts,
-  mockLearnerStats,
 } from "../../data/fraudSim";
 import type { LandingContent } from "../../i18n/types";
-import { useFraudData, type SubmitAttemptPayload } from "../../hooks/useFraudData";
+import { useFraudData, type FraudStats, type SubmitAttemptPayload } from "../../hooks/useFraudData";
 
 type FraudCopy = LandingContent["app"]["fraud"];
 
@@ -330,20 +329,6 @@ export function LearnerFraud() {
     return high ?? easy[0] ?? notStarted[0] ?? scenarios[0];
   }
 
-  function pickRecommendedScenarios(limit = 4): ReadonlyArray<FraudSimScenario> {
-    if (scenarios.length === 0) return [];
-    const rank = (s: FraudSimScenario): number => {
-      const status = statuses[s.id] ?? s.initialStatus;
-      const statusScore =
-        status === "not_started" ? 0 : status === "in_progress" ? 1 : 2;
-      const riskScore = -RISK_RANK[s.riskLevel];
-      const diffScore = DIFFICULTY_RANK[s.difficulty];
-      return statusScore * 100 + riskScore * 10 + diffScore;
-    };
-    const sorted = [...scenarios].sort((a, b) => rank(a) - rank(b));
-    return sorted.slice(0, Math.min(limit, sorted.length));
-  }
-
   function handlePlayBack() {
     setPlay(null);
   }
@@ -414,8 +399,6 @@ export function LearnerFraud() {
     : null;
 
   const recommended = pickRecommendedScenario();
-  const recommendedList = pickRecommendedScenarios(4);
-
   return (
     <div className="flex flex-col gap-section-sm animate-fade-in">
       <header className="grid gap-xl lg:grid-cols-[1fr_360px] lg:items-end">
@@ -443,13 +426,6 @@ export function LearnerFraud() {
           </div>
         </div>
 
-        <RecommendedRotator
-          t={t}
-          scenarios={recommendedList.length > 0 ? recommendedList : [recommended]}
-          statuses={statuses}
-          bestScores={bestScores}
-          onStart={(id) => startScenario(id)}
-        />
       </header>
 
       <div className="grid gap-xl lg:grid-cols-[1fr_320px]">
@@ -599,55 +575,6 @@ function nextScenarioAfter(id: string, list: ReadonlyArray<FraudSimScenario>): s
 }
 
 // ----------------------------- Sub-views --------------------------------
-
-function RecommendedCard({
-  t,
-  scenario,
-  onStart,
-}: {
-  t: FraudCopy;
-  scenario: FraudSimScenario;
-  onStart: (id: string) => void;
-}) {
-  return (
-    <Card
-      tone="yellow"
-      size="base"
-      className="!p-lg flex flex-col gap-sm transition-all duration-200 ease-out hover:shadow-elev-2 animate-fade-in"
-    >
-      <div className="flex items-center justify-between">
-        <span className="text-micro-uppercase uppercase text-yellow-dark tracking-wide">
-          {t.sidebar.tipTitle}
-        </span>
-        <FraudTypeIcon type={scenario.fraudType} />
-      </div>
-      <h3 className="text-heading-5 text-primary line-clamp-2">
-        {scenario.title}
-      </h3>
-      <div className="flex items-center gap-xs flex-wrap">
-        <Badge variant={difficultyBadge(scenario.difficulty)}>
-          {difficultyLabel(t, scenario.difficulty)}
-        </Badge>
-        <Badge variant={riskBadge(scenario.riskLevel)}>
-          {riskLabel(t, scenario.riskLevel)}
-        </Badge>
-        <span className="text-caption text-yellow-dark">
-          {scenario.estimatedMinutes} {t.detail.durationMinutes}
-        </span>
-      </div>
-      <div className="mt-xs">
-        <Button
-          variant="primary"
-          size="md"
-          onClick={() => onStart(scenario.id)}
-          className="w-full justify-center"
-        >
-          {t.actions.start}
-        </Button>
-      </div>
-    </Card>
-  );
-}
 
 function TabsBar({
   t,
@@ -1066,7 +993,7 @@ function FraudTypeIcon({ type }: { type: FraudSimType }) {
 
 // ------------------------------ Sidebar ---------------------------------
 
-function StatsCard({ t, stats }: { t: FraudCopy; stats: typeof mockLearnerStats }) {
+function StatsCard({ t, stats }: { t: FraudCopy; stats: FraudStats }) {
   const rows: Array<{
     label: string;
     value: string;

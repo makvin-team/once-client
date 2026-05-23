@@ -74,16 +74,6 @@ export function AdminMockScenarios() {
   );
 }
 
-export function AdminFraudScenarios() {
-  return (
-    <StubPage
-      eyebrow="Fraud scenarios"
-      title="Anti-Fraud scenariy boshqaruvi"
-      description="Phishing, suspicious transaction, fake document, deepfake, social engineering, AML/KYC red flag."
-    />
-  );
-}
-
 export function AdminAssignments() {
   return (
     <StubPage

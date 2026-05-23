@@ -3,6 +3,7 @@ import { Outlet } from "react-router-dom";
 import { Sidebar, type SidebarSection } from "./Sidebar";
 import { AppHeader } from "./AppHeader";
 import { CursorDotWave } from "../ui/CursorDotWave";
+import { QuickQuestionsWidget } from "../../features/quickQuestions";
 import { cn } from "../../lib/cn";
 
 type AppShellProps = {
@@ -21,7 +22,7 @@ export function AppShell({ sections, footer }: AppShellProps) {
           cards) instead of leaking into the root context. */}
       <CursorDotWave layer="behind" />
       {/* Desktop sidebar */}
-      <div className="hidden md:flex flex-shrink-0">
+      <div className="hidden md:flex flex-shrink-0 sticky top-0 h-screen">
         <Sidebar sections={sections} footer={footer} />
       </div>
 
@@ -40,11 +41,12 @@ export function AppShell({ sections, footer }: AppShellProps) {
       )}
 
       {/* Main column */}
-      <div className={cn("flex-1 min-w-0 flex flex-col")}>
+      <div className={cn("flex-1 min-w-0 flex flex-col relative")}>
         <AppHeader onMenuClick={() => setMobileOpen((v) => !v)} />
         <main className="flex-1 px-md md:px-xl py-xl">
           <Outlet />
         </main>
+        <QuickQuestionsWidget />
       </div>
     </div>
   );

@@ -288,10 +288,6 @@ export async function authFetch(
 
 // ------------------------------ OAuth/SSO helpers ----------------------
 
-export function getGoogleOauthUrl(): string {
-  return import.meta.env.VITE_GOOGLE_OAUTH_URL ?? "/auth/google";
-}
-
 export function getSsoInitUrl(identifier: string): string {
   const base = import.meta.env.VITE_SSO_INIT_URL ?? "/auth/sso";
   const sep = base.includes("?") ? "&" : "?";

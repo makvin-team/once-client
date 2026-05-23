@@ -4,7 +4,7 @@ export const uz: LandingContent = {
   meta: {
     title: "once — bank xodimlari uchun AI onboarding va training",
     description:
-      "once: bank xodimlari uchun AI knowledge assistant, role-based learning, mock playground va fraud simulator. Train smarter. Reduce risk. Improve service.",
+      "once: bank xodimlari uchun AI knowledge assistant, role-based learning, mock playground va fraud simulator.",
     siteName: "once",
   },
   brand: {
@@ -41,7 +41,7 @@ export const uz: LandingContent = {
     title: "Bank xodimlari uchun AI asosidagi onboarding va training.",
     titleHighlight: "AI asosidagi",
     subtitle:
-      "Bank xodimlarini tezroq o'qiting, ichki hujjatlar bo'yicha AI yordam bering, real jarayonlarni xavfsiz simulator'da mashq qildiring va fraud risklarni kamaytiring — bir platformada.",
+      "Tezroq onboarding, ichki hujjatlardan tez javob, xavfsiz jarayon mashqi va kamroq fraud riski — bir platforma.",
     primaryCta: "Demo so'rash",
     secondaryCta: "Imkoniyatlarni ko'rish",
     primaryCtaHref: "#demo",
@@ -79,7 +79,7 @@ export const uz: LandingContent = {
       {
         tone: "canvas",
         title: "Sekin moslashuv",
-        body: "Yangi xodimlar ichki jarayonlarga sekin moslashadi va haftalar yo'qotiladi.",
+        body: "Yangi xodimlar ichki jarayonlarga haftalab moslashadi.",
       },
       {
         tone: "yellow",
@@ -116,7 +116,7 @@ export const uz: LandingContent = {
   solution: {
     eyebrow: "Yechim",
     title: "Bitta platforma. 1-kundan boshlab 90-kun mahoratigacha.",
-    body: "once bank xodimlari uchun AI knowledge base, role-based learning plan, mock playground, fraud simulator, progress tracking va HR analytics'ni bitta platformada birlashtiradi.",
+    body: "once bank xodimlari uchun AI knowledge base, role-based learning, mock playground, fraud simulator, progress tracking va HR analytics'ni bitta platformada birlashtiradi.",
     items: [
       {
         title: "AI bilim",
@@ -464,7 +464,7 @@ export const uz: LandingContent = {
       view: "Ko'rish",
       upload: "Yuklash",
       assign: "Biriktirish",
-      publish: "Publish",
+      publish: "Nashr etish",
     },
     assistant: {
       title: "AI Knowledge Assistant",
@@ -562,7 +562,7 @@ export const uz: LandingContent = {
         avgScore: "O'rt. ball",
         attempts: "Urin.",
         updated: "Yangilangan",
-        actions: "Actions",
+        actions: "Harakatlar",
       },
       actions: {
         start: "Boshlash",
@@ -623,15 +623,15 @@ export const uz: LandingContent = {
           phishing: {
             sender: "Yuboruvchi",
             received: "Qabul qilindi",
-            link: "Link",
-            attachment: "Attachment",
+            link: "Havola",
+            attachment: "Biriktirma",
           },
           transaction: {
             customer: "Mijoz",
             accountAge: "Hisob yoshi",
             amount: "Summa",
-            destination: "Destination",
-            frequency: "Tezlik",
+            destination: "Manzil",
+            frequency: "Chastota",
             description: "Tavsif",
             usualBehavior: "Odatdagi xulq",
           },
@@ -655,7 +655,7 @@ export const uz: LandingContent = {
             channel: "Kanal",
             requestedAction: "Talab",
             pressureTactic: "Bosim taktikasi",
-            policyHint: "Ichki politsiya",
+            policyHint: "Ichki siyosat",
           },
           aml: {
             businessType: "Biznes turi",
@@ -673,7 +673,7 @@ export const uz: LandingContent = {
         decision: {
           eyebrow: "Yakuniy qaror",
           validation: "Kamida bitta qaror tanlang.",
-          submitCta: "Submit qilish",
+          submitCta: "Tasdiqlash",
         },
         result: {
           passedTitle: "Muvaffaqiyatli o'tdingiz",
@@ -705,7 +705,7 @@ export const uz: LandingContent = {
         result: "Natija",
         detected: "Topilgan flag",
         missed: "O'tkazib yub.",
-        action: "Action",
+        action: "Harakat",
         viewResult: "Natijani ko'rish",
         retry: "Qayta urinish",
         attemptedAt: "Sana",

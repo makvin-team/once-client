@@ -14,6 +14,7 @@ import { DemoForm } from "../components/sections/DemoForm";
 import { Faq } from "../components/sections/Faq";
 import { Footer } from "../components/sections/Footer";
 import { CursorDotWave } from "../components/ui/CursorDotWave";
+import { QuickQuestionsWidget } from "../features/quickQuestions";
 import { track } from "../lib/analytics";
 
 export function Home() {
@@ -40,6 +41,7 @@ export function Home() {
         <Faq />
       </main>
       <Footer />
+      <QuickQuestionsWidget />
     </div>
   );
 }

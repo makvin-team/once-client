@@ -10,7 +10,7 @@ export function PromoBanner() {
       id="top"
       href={promo.href}
       onClick={(e) => onAnchorClick(e, promo.href)}
-      className="block bg-primary text-on-primary text-body-sm-medium px-md py-sm hover:opacity-90 transition-opacity"
+      className="hidden md:block bg-primary text-on-primary text-body-sm-medium px-md py-sm hover:opacity-90 transition-opacity"
     >
       <div className="mx-auto max-w-container flex items-center justify-center gap-sm flex-wrap">
         <span className="opacity-90">{promo.text}</span>

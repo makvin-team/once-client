@@ -85,12 +85,16 @@ const ROLE_CLAIMS = [
   "http://schemas.microsoft.com/ws/2008/06/identity/claims/role",
 ];
 const NAME_CLAIMS = [
-  "name",
+  "full-name",
   "fullName",
+  "name",
+  "http://schemas.xmlsoap.org/ws/2005/05/identity/claims/name",
   "given_name",
   "preferred_username",
-  "username",
 ];
+const FIRST_NAME_CLAIMS = ["first-name", "firstName", "given_name"];
+const LAST_NAME_CLAIMS = ["last-name", "lastName", "family_name"];
+const USERNAME_CLAIMS = ["username", "preferred_username", "unique_name"];
 const EMAIL_CLAIMS = [
   "email",
   "http://schemas.xmlsoap.org/ws/2005/05/identity/claims/emailaddress",
@@ -114,13 +118,20 @@ function userFromToken(token: string): {
   if (!role) return null;
 
   const id = String(pick(payload, ID_CLAIMS) ?? "");
-  const name = String(pick(payload, NAME_CLAIMS) ?? "");
-  const email = String(pick(payload, EMAIL_CLAIMS) ?? "");
+  const fullName = String(pick(payload, NAME_CLAIMS) ?? "").trim();
+  const firstName = String(pick(payload, FIRST_NAME_CLAIMS) ?? "").trim();
+  const lastName = String(pick(payload, LAST_NAME_CLAIMS) ?? "").trim();
+  const username = String(pick(payload, USERNAME_CLAIMS) ?? "").trim();
+  const email = String(pick(payload, EMAIL_CLAIMS) ?? "").trim();
+
+  const combinedName = [firstName, lastName].filter(Boolean).join(" ").trim();
+  const displayName =
+    fullName || combinedName || username || email || "User";
 
   return {
     user: {
       id,
-      fullName: name || email || id || "User",
+      fullName: displayName,
       email: email || "",
       roles: [role],
       status: "active",

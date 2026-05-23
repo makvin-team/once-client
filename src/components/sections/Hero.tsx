@@ -19,21 +19,27 @@ export function Hero() {
   const remainingTitle = hero.title.replace(hero.titleHighlight, "").trim();
 
   return (
-    <section className="relative overflow-hidden bg-canvas">
-      <div className="absolute inset-0 -z-10 bg-grid-yellow opacity-50" />
-      <div className="mx-auto max-w-container px-2xl pt-section pb-section-lg text-center">
-        <Badge variant="tag-purple" className="mb-xl">
+    // h-screen minus PromoBanner (~48px) + TopNav (64px) = 112px chrome above
+    <section className="relative isolate h-[calc(100vh-64px)] md:h-[calc(100vh-112px)] min-h-[560px] overflow-hidden bg-canvas">
+      <img
+        aria-hidden
+        src="/grid.png"
+        alt=""
+        className="hidden md:block absolute inset-0 w-full h-full object-cover object-top -z-10 pointer-events-none select-none opacity-[0.05]"
+      />
+      <div className="mx-auto max-w-container px-2xl text-center flex flex-col items-center justify-center h-full pb-0 md:pb-[300px]">
+        <Badge variant="tag-purple" className="mb-md">
           {hero.eyebrow}
         </Badge>
-        <h1 className="text-heading-1 md:text-display-lg xl:text-hero-display text-ink font-display max-w-[1080px] mx-auto">
+        <h1 className="text-heading-1 md:text-display-lg text-ink font-display max-w-[900px] mx-auto">
           <span className="text-brand-yellow-deep">{hero.titleHighlight}</span>{" "}
           {remainingTitle}
         </h1>
-        <p className="mt-xl mx-auto max-w-[720px] text-subtitle text-slate">
+        <p className="mt-md mx-auto max-w-[720px] text-subtitle text-slate">
           {hero.subtitle}
         </p>
 
-        <div className="mt-2xl flex items-center justify-center gap-sm flex-wrap">
+        <div className="mt-lg flex items-center justify-center gap-sm flex-wrap">
           <Button
             variant="primary"
             size="lg"
@@ -56,17 +62,18 @@ export function Hero() {
           </Button>
         </div>
 
-        <ul className="mt-xl flex items-center justify-center gap-xs flex-wrap">
+        <ul className="mt-md flex items-center justify-center gap-xs flex-wrap">
           {hero.badges.map((b) => (
             <li key={b.label}>
               <Badge variant={badgeVariants[b.tone]}>{b.label}</Badge>
             </li>
           ))}
         </ul>
+      </div>
 
-        <div className="mt-section-lg">
-          <WhiteboardMockup />
-        </div>
+      {/* Whiteboard mockup — board height ~480px, 30% (~144px) cropped below the hero edge */}
+      <div className="hidden md:block absolute inset-x-0 bottom-[-144px] px-2xl">
+        <WhiteboardMockup />
       </div>
     </section>
   );
