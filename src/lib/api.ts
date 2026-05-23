@@ -121,7 +121,9 @@ type LoginResponseBody = {
 
 // Backend ProblemDetails for auth errors look like:
 //   { type: "Auth.InvalidCredentials" | "Auth.UserInactive" | ... }
-function classifyAuthError(body: unknown): LoginResult["status"] {
+type AuthErrorResult = Extract<LoginResult, { status: "inactive" | "invalid_credentials" | "error" }>;
+
+function classifyAuthError(body: unknown): AuthErrorResult {
   if (
     body &&
     typeof body === "object" &&
@@ -129,12 +131,12 @@ function classifyAuthError(body: unknown): LoginResult["status"] {
     typeof (body as { type?: unknown }).type === "string"
   ) {
     const t = (body as { type: string }).type.toLowerCase();
-    if (t.includes("inactive")) return "inactive";
+    if (t.includes("inactive")) return { status: "inactive" };
     if (t.includes("invalidcredentials") || t.includes("invalid_credentials")) {
-      return "invalid_credentials";
+      return { status: "invalid_credentials" };
     }
   }
-  return "error";
+  return { status: "error" };
 }
 
 // ------------------------------ Login -----------------------------------
@@ -178,7 +180,7 @@ export async function submitLogin(
     if (!res.ok) {
       const body = await res.json().catch(() => ({}));
       if (res.status === 401 || res.status === 403) {
-        return { status: classifyAuthError(body) };
+        return classifyAuthError(body);
       }
       return { status: "error", message: `HTTP ${res.status}` };
     }
