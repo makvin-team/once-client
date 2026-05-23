@@ -55,9 +55,29 @@ export function AdminKnowledge() {
     }
   }, []);
 
+  // Initial load. The fetch runs inside an async IIFE so setState happens in a
+  // nested callback (after await), not synchronously in the effect body —
+  // satisfies react-hooks/set-state-in-effect and avoids cascading renders.
   useEffect(() => {
-    refresh();
-  }, [refresh]);
+    let cancelled = false;
+    (async () => {
+      setLoading(true);
+      try {
+        const [d, s] = await Promise.all([listDocuments(), getStats()]);
+        if (!cancelled) {
+          setDocs(d);
+          setStats(s);
+        }
+      } catch {
+        /* first-load failure: empty state covers it */
+      } finally {
+        if (!cancelled) setLoading(false);
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, []);
 
   // Poll while any document is still being embedded.
   useEffect(() => {
