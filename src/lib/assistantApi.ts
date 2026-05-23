@@ -2,7 +2,7 @@
 // proxies to ai-backend and holds the api-key. Streaming uses fetch + a
 // ReadableStream reader (EventSource can't POST or send auth headers).
 
-import { API_BASE_URL } from "./api";
+import { API_BASE_URL, authFetch } from "./api";
 import { tokenStore } from "../auth/tokenStore";
 import type { Citation } from "./mockAI";
 
@@ -27,6 +27,7 @@ type MessageDto = {
 
 type Paged<T> = { items: T[]; total: number; page: number; size: number; pages: number };
 
+// snake_case keys: these come straight from ai-backend (once-server proxies them as-is).
 type RegulatorySource = {
   document_id?: string;
   source_id?: string;
@@ -58,7 +59,7 @@ function toCitation(s: RegulatorySource): Citation {
   return {
     docId: s.document_id ?? s.source_id ?? s.title ?? "source",
     title: s.title ?? s.doc_number ?? "Manba",
-    section: s.clause_label ?? undefined,
+    section: s.clause_label,
   };
 }
 
@@ -84,6 +85,7 @@ export function streamChat(
         signal: controller.signal,
       });
     } catch {
+      if (controller.signal.aborted) return; // user-initiated abort, stay silent
       handlers.onError("network");
       return;
     }
@@ -108,7 +110,7 @@ export function streamChat(
         while ((sep = buffer.indexOf("\n\n")) !== -1) {
           const rawEvent = buffer.slice(0, sep);
           buffer = buffer.slice(sep + 2);
-          dispatchEvent(rawEvent, handlers);
+          handleSseEvent(rawEvent, handlers);
         }
       }
     } catch {
@@ -119,7 +121,7 @@ export function streamChat(
   return () => controller.abort();
 }
 
-function dispatchEvent(rawEvent: string, handlers: StreamHandlers) {
+function handleSseEvent(rawEvent: string, handlers: StreamHandlers) {
   // An event may contain one or more `data:` lines; ai-backend sends one.
   const dataLine = rawEvent
     .split("\n")
@@ -166,7 +168,8 @@ function dispatchEvent(rawEvent: string, handlers: StreamHandlers) {
 // ----- History (non-streaming) -----
 
 async function getJson<T>(path: string): Promise<T> {
-  const res = await fetch(`${API_BASE_URL}${path}`, { headers: authHeaders() });
+  // authFetch attaches the Bearer token and transparently refreshes on 401.
+  const res = await authFetch(path);
   if (!res.ok) throw new Error(`HTTP ${res.status}`);
   return (await res.json()) as T;
 }
@@ -196,6 +199,8 @@ export type LoadedMessage = {
 };
 
 export async function getMessages(conversationId: string): Promise<LoadedMessage[]> {
+  // TODO: only the first page is read. once-server requests a large upstream page
+  // size, so this covers normal conversations; paginate for very long ones.
   const page = await getJson<Paged<MessageDto>>(
     `/api/assistant/conversations/${conversationId}/messages`,
   );
@@ -213,9 +218,8 @@ export async function getMessages(conversationId: string): Promise<LoadedMessage
 }
 
 export async function deleteConversation(conversationId: string): Promise<void> {
-  const res = await fetch(
-    `${API_BASE_URL}/api/assistant/conversations/${conversationId}`,
-    { method: "DELETE", headers: authHeaders() },
-  );
+  const res = await authFetch(`/api/assistant/conversations/${conversationId}`, {
+    method: "DELETE",
+  });
   if (!res.ok) throw new Error(`HTTP ${res.status}`);
 }
