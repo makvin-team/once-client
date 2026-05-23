@@ -97,7 +97,7 @@ export function AdminKnowledge() {
           );
         }
       }
-      refresh();
+      await refresh();
     },
     [refresh],
   );
@@ -136,6 +136,8 @@ export function AdminKnowledge() {
         }}
         onDragLeave={() => setDragOver(false)}
         onDrop={onDrop}
+        role="region"
+        aria-label="Document upload drop zone"
         className={cn(
           "rounded-2xl border-2 border-dashed p-xl text-center transition-colors",
           dragOver
