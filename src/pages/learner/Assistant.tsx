@@ -36,6 +36,7 @@ export function LearnerAssistant() {
 
   const messagesRef = useRef<HTMLDivElement | null>(null);
   const textareaRef = useRef<HTMLTextAreaElement | null>(null);
+  const abortStreamRef = useRef<(() => void) | null>(null);
 
   const activeSession = useMemo(
     () => sessions.find((s) => s.id === activeId) ?? null,
@@ -59,29 +60,33 @@ export function LearnerAssistant() {
     };
   }, [userId]);
 
-  // Lazily fetch messages when an unloaded session becomes active.
+  // Lazily fetch messages when an unloaded session becomes active. Depend on
+  // scalar fields (not the whole sessions array) so streaming token updates,
+  // which change messages but not loaded/conversationId, don't re-run this.
+  const activeLoaded = activeSession?.loaded ?? true;
+  const activeConversationId = activeSession?.conversationId;
   useEffect(() => {
-    const session = sessions.find((s) => s.id === activeId);
-    if (!session || session.loaded || !session.conversationId) return;
+    if (activeLoaded || !activeConversationId || activeId == null) return;
+    const sessionId = activeId;
     let cancelled = false;
-    fetchMessages(session.conversationId)
+    fetchMessages(activeConversationId)
       .then((messages) => {
         if (cancelled) return;
         setSessions((prev) =>
           prev.map((s) =>
-            s.id === session.id ? { ...s, messages, loaded: true } : s,
+            s.id === sessionId ? { ...s, messages, loaded: true } : s,
           ),
         );
       })
       .catch(() => {
         setSessions((prev) =>
-          prev.map((s) => (s.id === session.id ? { ...s, loaded: true } : s)),
+          prev.map((s) => (s.id === sessionId ? { ...s, loaded: true } : s)),
         );
       });
     return () => {
       cancelled = true;
     };
-  }, [activeId, sessions]);
+  }, [activeId, activeLoaded, activeConversationId]);
 
   // Auto-scroll to bottom when messages change.
   useEffect(() => {
@@ -89,6 +94,9 @@ export function LearnerAssistant() {
     if (!el) return;
     el.scrollTop = el.scrollHeight;
   }, [activeSession?.messages.length, pending]);
+
+  // Abort any in-flight stream when the component unmounts.
+  useEffect(() => () => abortStreamRef.current?.(), []);
 
   function ensureActiveSession(): Session {
     if (activeSession) return activeSession;
@@ -174,7 +182,8 @@ export function LearnerAssistant() {
           ),
         );
 
-      streamChat(
+      abortStreamRef.current?.(); // cancel any prior in-flight stream
+      abortStreamRef.current = streamChat(
         { conversationId: session!.conversationId, message: prompt },
         {
           onChunk: (token) =>
@@ -188,7 +197,7 @@ export function LearnerAssistant() {
                   ? {
                       ...s,
                       conversationId,
-                      title: s.title || title || s.title,
+                      title: s.title || title || "",
                       loaded: true,
                       updatedAt: new Date().toISOString(),
                     }
@@ -261,6 +270,11 @@ export function LearnerAssistant() {
       sendPrompt(draft);
     }
   }
+
+  const msgs = activeSession?.messages ?? [];
+  const lastMsg = msgs[msgs.length - 1];
+  const showTyping =
+    pending && !(lastMsg?.role === "assistant" && lastMsg.text.length > 0);
 
   return (
     <div className="-my-xl flex h-[calc(100vh-64px)] bg-canvas">
@@ -340,7 +354,7 @@ export function LearnerAssistant() {
                     />
                   </li>
                 ))}
-                {pending && (
+                {showTyping && (
                   <li>
                     <TypingBubble label={copy.typing} />
                   </li>
