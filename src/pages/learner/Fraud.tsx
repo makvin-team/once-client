@@ -6,7 +6,7 @@
 // red-flag labels) stays in src/data/fraudSim.ts — those are domain copy
 // rather than UI chrome.
 
-import { useEffect, useMemo, useState, type ReactNode } from "react";
+import { useMemo, useState, type ReactNode } from "react";
 import { StatusPill } from "../../components/app/StatusPill";
 import { EmptyState } from "../../components/app/EmptyState";
 import { Icon } from "../../components/app/icons";
@@ -201,43 +201,31 @@ export function LearnerFraud() {
   const [riskFilter, setRiskFilter] = useState<FraudSimRisk | null>(null);
   const [sortKey, setSortKey] = useState<SortKey>("updated");
 
-  const [statuses, setStatuses] = useState<Record<string, FraudSimStatus>>(
-    () => {
-      const m: Record<string, FraudSimStatus> = {};
-      for (const s of mockFraudScenarios) m[s.id] = s.initialStatus;
-      return m;
-    },
-  );
-  const [bestScores, setBestScores] = useState<Record<string, number>>(() => {
-    const m: Record<string, number> = {};
-    for (const s of mockFraudScenarios) {
-      if (s.previousBest != null) m[s.id] = s.previousBest;
-    }
-    return m;
-  });
+  // User mutations only — base values derived from API/mock below
+  const [statusOverrides, setStatusOverrides] = useState<Record<string, FraudSimStatus>>({});
+  const [scoreOverrides, setScoreOverrides]   = useState<Record<string, number>>({});
+  const [localNewAttempts, setLocalNewAttempts] = useState<ReadonlyArray<FraudAttemptRecord>>([]);
+
+  const statuses = useMemo<Record<string, FraudSimStatus>>(() => {
+    const base = apiAvailable
+      ? Object.fromEntries(apiScenarios.map((s) => [s.id, s.initialStatus ?? "not_started"]))
+      : Object.fromEntries((mockFraudScenarios as FraudSimScenario[]).map((s) => [s.id, s.initialStatus]));
+    return { ...base, ...statusOverrides } as Record<string, FraudSimStatus>;
+  }, [apiAvailable, apiScenarios, statusOverrides]);
+
+  const bestScores = useMemo<Record<string, number>>(() => {
+    const base = apiAvailable
+      ? Object.fromEntries(apiScenarios.filter((s) => s.previousBest != null).map((s) => [s.id, s.previousBest!]))
+      : Object.fromEntries((mockFraudScenarios as FraudSimScenario[]).filter((s) => s.previousBest != null).map((s) => [s.id, s.previousBest!]));
+    return { ...base, ...scoreOverrides };
+  }, [apiAvailable, apiScenarios, scoreOverrides]);
+
+  const attempts = useMemo<ReadonlyArray<FraudAttemptRecord>>(() => {
+    const base = apiAvailable ? apiAttempts : mockLearnerAttempts;
+    return [...localNewAttempts, ...base];
+  }, [apiAvailable, apiAttempts, localNewAttempts]);
 
   const [favorites, setFavorites] = useState<ReadonlyArray<string>>([]);
-  const [attempts, setAttempts] = useState<ReadonlyArray<FraudAttemptRecord>>(
-    mockLearnerAttempts,
-  );
-
-  // API data kelganda statuses, bestScores va attempts ni yangilaymiz
-  useEffect(() => {
-    if (!apiAvailable) return;
-    setStatuses(
-      Object.fromEntries(apiScenarios.map((s) => [s.id, s.initialStatus ?? "not_started"])) as Record<string, FraudSimStatus>,
-    );
-    setBestScores(
-      Object.fromEntries(
-        apiScenarios.filter((s) => s.previousBest != null).map((s) => [s.id, s.previousBest!]),
-      ),
-    );
-  }, [apiAvailable, apiScenarios]);
-
-  useEffect(() => {
-    if (!apiAvailable) return;
-    setAttempts(apiAttempts);
-  }, [apiAvailable, apiAttempts]);
 
   const [detailScenarioId, setDetailScenarioId] = useState<string | null>(null);
   const [play, setPlay] = useState<PlayState | null>(null);
@@ -307,8 +295,8 @@ export function LearnerFraud() {
   function startScenario(id: string) {
     setDetailScenarioId(null);
     setAttemptDetail(null);
-    setStatuses((prev) =>
-      prev[id] === "completed" ? prev : { ...prev, [id]: "in_progress" },
+    setStatusOverrides((prev) =>
+      statuses[id] === "completed" ? prev : { ...prev, [id]: "in_progress" },
     );
     setPlay({
       scenarioId: id,
@@ -348,13 +336,13 @@ export function LearnerFraud() {
     );
     setPlay({ ...play, phase: "result", result, validationError: null });
 
-    setStatuses((prev) => ({
+    setStatusOverrides((prev) => ({
       ...prev,
       [scenario.id]: result.passed ? "completed" : "failed",
     }));
-    setBestScores((prev) => ({
+    setScoreOverrides((prev) => ({
       ...prev,
-      [scenario.id]: Math.max(prev[scenario.id] ?? 0, result.score),
+      [scenario.id]: Math.max(bestScores[scenario.id] ?? 0, result.score),
     }));
 
     const localAttempt: FraudAttemptRecord = {
@@ -368,7 +356,7 @@ export function LearnerFraud() {
       missedFlags: result.missedFlagIds.length,
       attemptedAt: new Date().toISOString().slice(0, 10),
     };
-    setAttempts((prev) => [localAttempt, ...prev]);
+    setLocalNewAttempts((prev) => [localAttempt, ...prev]);
 
     // API ga yuboramiz (fire-and-forget, xato bo'lsa local state qoladi)
     const payload: SubmitAttemptPayload = {
@@ -382,7 +370,7 @@ export function LearnerFraud() {
     };
     void submitAttempt(payload).then((saved) => {
       if (saved) {
-        setAttempts((prev) =>
+        setLocalNewAttempts((prev) =>
           prev.map((a) => (a.id === localAttempt.id ? saved : a)),
         );
       }

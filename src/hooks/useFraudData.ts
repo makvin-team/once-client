@@ -42,13 +42,11 @@ export function useFraudData(): UseFraudDataResult {
   const [scenarios, setScenarios] = useState<FraudSimScenario[]>(mockFraudScenarios as FraudSimScenario[])
   const [stats, setStats]         = useState<FraudStats>({ ...mockLearnerStats })
   const [attempts, setAttempts]   = useState<FraudAttemptRecord[]>([...mockLearnerAttempts])
-  const [loading, setLoading]     = useState(false)
+  const [loading, setLoading]     = useState(!!API_BASE_URL)
   const [apiAvailable, setApiAvailable] = useState(false)
 
   useEffect(() => {
     if (!API_BASE_URL) return
-
-    setLoading(true)
 
     Promise.all([
       fraudService.getScenarios(),
