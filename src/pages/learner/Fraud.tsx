@@ -6,7 +6,9 @@
 // red-flag labels) stays in src/data/fraudSim.ts — those are domain copy
 // rather than UI chrome.
 
-import { useMemo, useState, type ReactNode } from "react";
+import { useEffect, useMemo, useState, type ReactNode } from "react";
+import { createPortal } from "react-dom";
+import { useNavigate } from "react-router-dom";
 import { StatusPill } from "../../components/app/StatusPill";
 import { EmptyState } from "../../components/app/EmptyState";
 import { Icon } from "../../components/app/icons";
@@ -15,7 +17,7 @@ import { Button } from "../../components/ui/Button";
 import { Card } from "../../components/ui/Card";
 import { Input } from "../../components/ui/Input";
 import { Select } from "../../components/ui/Select";
-import { useT } from "../../i18n";
+import { useLocale, useT } from "../../i18n";
 import { cn } from "../../lib/cn";
 import {
   type DecisionOption,
@@ -37,7 +39,7 @@ type FraudCopy = LandingContent["app"]["fraud"];
 
 // ----------------------------- Filter types ------------------------------
 
-type Tab = "all" | "attempts" | "favorites";
+type Tab = "all" | "attempts";
 type SortKey =
   | "updated"
   | "highestRisk"
@@ -178,6 +180,8 @@ function scorePlay(
 export function LearnerFraud() {
   const i18n = useT();
   const t = i18n.app.fraud;
+  const { locale } = useLocale();
+  const navigate = useNavigate();
 
   const {
     scenarios: apiScenarios,
@@ -185,7 +189,7 @@ export function LearnerFraud() {
     attempts: apiAttempts,
     apiAvailable,
     submitAttempt,
-  } = useFraudData();
+  } = useFraudData(locale);
 
   const scenarios = apiAvailable && apiScenarios.length > 0
     ? apiScenarios
@@ -224,8 +228,6 @@ export function LearnerFraud() {
     const base = apiAvailable ? apiAttempts : mockLearnerAttempts;
     return [...localNewAttempts, ...base];
   }, [apiAvailable, apiAttempts, localNewAttempts]);
-
-  const [favorites, setFavorites] = useState<ReadonlyArray<string>>([]);
 
   const [detailScenarioId, setDetailScenarioId] = useState<string | null>(null);
   const [play, setPlay] = useState<PlayState | null>(null);
@@ -267,11 +269,6 @@ export function LearnerFraud() {
     return list;
   }, [search, typeFilter, difficultyFilter, riskFilter, sortKey, bestScores, t, scenarios]);
 
-  const favoriteScenarios = useMemo(
-    () => scenarios.filter((s) => favorites.includes(s.id)),
-    [favorites, scenarios],
-  );
-
   // ----------------------------- Handlers --------------------------------
 
   function clearFilters() {
@@ -282,14 +279,19 @@ export function LearnerFraud() {
     setSortKey("updated");
   }
 
-  function toggleFavorite(id: string) {
-    setFavorites((prev) =>
-      prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id],
-    );
-  }
-
   function openDetail(id: string) {
     setDetailScenarioId(id);
+  }
+
+  function redirectToPlay(id: string) {
+    const scenario = scenarios.find((s) => s.id === id);
+    const url = scenario?.playUrl;
+    if (!url) return;
+    if (/^https?:\/\//i.test(url)) {
+      window.open(url, "_blank", "noopener,noreferrer");
+    } else {
+      navigate(url);
+    }
   }
 
   function startScenario(id: string) {
@@ -389,31 +391,16 @@ export function LearnerFraud() {
   const recommended = pickRecommendedScenario();
   return (
     <div className="flex flex-col gap-section-sm animate-fade-in">
-      <header className="grid gap-xl lg:grid-cols-[1fr_360px] lg:items-end">
-        <div className="min-w-0">
-          <p className="text-micro-uppercase uppercase text-steel mb-xs">
-            {t.eyebrow}
-          </p>
-          <h1 className="text-heading-2 md:text-heading-1 font-display text-ink">
-            {t.title}
-          </h1>
-          <p className="mt-sm text-body-md text-slate max-w-[560px]">
-            {t.subtitle}
-          </p>
-          <div className="mt-lg flex flex-wrap items-center gap-xs">
-            <Button
-              variant="primary"
-              size="lg"
-              onClick={() => startScenario(recommended.id)}
-            >
-              {t.primaryCta}
-            </Button>
-            <Button variant="ghost" size="lg" onClick={() => setTab("all")}>
-              {t.tabs.all}
-            </Button>
-          </div>
-        </div>
-
+      <header>
+        <p className="text-micro-uppercase uppercase text-steel mb-xs">
+          {t.eyebrow}
+        </p>
+        <h1 className="text-heading-2 md:text-heading-1 font-display text-ink">
+          {t.title}
+        </h1>
+        <p className="mt-sm text-body-md text-slate max-w-[560px]">
+          {t.subtitle}
+        </p>
       </header>
 
       <div className="grid gap-xl lg:grid-cols-[1fr_320px]">
@@ -423,7 +410,6 @@ export function LearnerFraud() {
             tab={tab}
             onChange={setTab}
             attemptsCount={attempts.length}
-            favoritesCount={favorites.length}
           />
 
           {tab === "all" && (
@@ -457,10 +443,7 @@ export function LearnerFraud() {
                   scenarios={filteredScenarios}
                   statuses={statuses}
                   bestScores={bestScores}
-                  favorites={favorites}
                   onOpenDetail={openDetail}
-                  onStart={startScenario}
-                  onToggleFavorite={toggleFavorite}
                 />
               )}
             </>
@@ -471,37 +454,11 @@ export function LearnerFraud() {
               t={t}
               attempts={attempts}
               onViewResult={(att) => setAttemptDetail(att)}
-              onRetry={(id) => startScenario(id)}
+              onRetry={(id) => openDetail(id)}
               onGotoAll={() => setTab("all")}
             />
           )}
 
-          {tab === "favorites" && (
-            <>
-              {favoriteScenarios.length === 0 ? (
-                <EmptyState
-                  title={t.empty.noFavorites.title}
-                  description={t.empty.noFavorites.body}
-                  action={
-                    <Button variant="primary" onClick={() => setTab("all")}>
-                      {t.empty.noFavorites.action}
-                    </Button>
-                  }
-                />
-              ) : (
-                <ScenarioList
-                  t={t}
-                  scenarios={favoriteScenarios}
-                  statuses={statuses}
-                  bestScores={bestScores}
-                  favorites={favorites}
-                  onOpenDetail={openDetail}
-                  onStart={startScenario}
-                  onToggleFavorite={toggleFavorite}
-                />
-              )}
-            </>
-          )}
         </div>
 
         <aside className="flex flex-col gap-lg">
@@ -516,10 +473,11 @@ export function LearnerFraud() {
           scenario={detailScenario}
           status={statuses[detailScenario.id] ?? detailScenario.initialStatus}
           bestScore={bestScores[detailScenario.id]}
-          isFavorite={favorites.includes(detailScenario.id)}
           onClose={() => setDetailScenarioId(null)}
-          onStart={() => startScenario(detailScenario.id)}
-          onToggleFavorite={() => toggleFavorite(detailScenario.id)}
+          onStart={() => {
+            setDetailScenarioId(null);
+            if (detailScenario.playUrl) redirectToPlay(detailScenario.id);
+          }}
         />
       )}
 
@@ -548,7 +506,7 @@ export function LearnerFraud() {
           onRetry={() => {
             const id = attemptDetail.scenarioId;
             setAttemptDetail(null);
-            startScenario(id);
+            openDetail(id);
           }}
         />
       )}
@@ -569,18 +527,15 @@ function TabsBar({
   tab,
   onChange,
   attemptsCount,
-  favoritesCount,
 }: {
   t: FraudCopy;
   tab: Tab;
   onChange: (t: Tab) => void;
   attemptsCount: number;
-  favoritesCount: number;
 }) {
   const tabs: Array<{ id: Tab; label: string; count?: number }> = [
     { id: "all", label: t.tabs.all },
     { id: "attempts", label: t.tabs.attempts, count: attemptsCount },
-    { id: "favorites", label: t.tabs.favorites, count: favoritesCount },
   ];
   return (
     <div
@@ -740,19 +695,13 @@ function ScenarioList({
   scenarios,
   statuses,
   bestScores,
-  favorites,
   onOpenDetail,
-  onStart,
-  onToggleFavorite,
 }: {
   t: FraudCopy;
   scenarios: ReadonlyArray<FraudSimScenario>;
   statuses: Record<string, FraudSimStatus>;
   bestScores: Record<string, number>;
-  favorites: ReadonlyArray<string>;
   onOpenDetail: (id: string) => void;
-  onStart: (id: string) => void;
-  onToggleFavorite: (id: string) => void;
 }) {
   return (
     <div className="rounded-2xl border border-hairline-soft bg-canvas overflow-hidden">
@@ -770,7 +719,6 @@ function ScenarioList({
       <ul className="divide-y divide-hairline-soft">
         {scenarios.map((s) => {
           const status = statuses[s.id] ?? s.initialStatus;
-          const isFav = favorites.includes(s.id);
           const best = bestScores[s.id];
           return (
             <li
@@ -845,15 +793,10 @@ function ScenarioList({
                     tone={statusToneFor(status)}
                     className="lg:hidden"
                   />
-                  <FavoriteButton
-                    t={t}
-                    active={isFav}
-                    onClick={() => onToggleFavorite(s.id)}
-                  />
                   <Button
                     size="md"
                     variant="primary"
-                    onClick={() => onStart(s.id)}
+                    onClick={() => onOpenDetail(s.id)}
                     className="transition-all duration-200 ease-out"
                   >
                     {primaryActionLabel(t, status)}
@@ -902,41 +845,6 @@ function riskBadge(r: FraudSimRisk): "tag-yellow" | "tag-coral" | "tag-teal" {
     case "high":
       return "tag-coral";
   }
-}
-
-function FavoriteButton({
-  t,
-  active,
-  onClick,
-}: {
-  t: FraudCopy;
-  active: boolean;
-  onClick: () => void;
-}) {
-  return (
-    <button
-      type="button"
-      onClick={onClick}
-      aria-pressed={active}
-      title={active ? t.actions.removeFavorite : t.actions.addFavorite}
-      className={cn(
-        "inline-flex items-center justify-center w-9 h-9 rounded-full transition-colors",
-        active
-          ? "bg-surface-yellow text-yellow-dark"
-          : "bg-surface text-steel hover:text-ink",
-      )}
-    >
-      <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden>
-        <path
-          d="M8 2.5l1.8 3.7 4.1.6-3 2.9.7 4-3.6-1.9-3.6 1.9.7-4-3-2.9 4.1-.6L8 2.5Z"
-          fill={active ? "currentColor" : "none"}
-          stroke="currentColor"
-          strokeWidth="1.4"
-          strokeLinejoin="round"
-        />
-      </svg>
-    </button>
-  );
 }
 
 function FraudTypeIcon({ type }: { type: FraudSimType }) {
@@ -1039,12 +947,35 @@ function StatsCard({ t, stats }: { t: FraudCopy; stats: FraudStats }) {
 }
 
 function TipCard({ t }: { t: FraudCopy }) {
-  const [expanded, setExpanded] = useState(false);
+  const tips = t.sidebar.tips;
+  const [idx, setIdx] = useState(0);
+  const [fading, setFading] = useState(false);
+
+  useEffect(() => {
+    const id = setInterval(() => {
+      setFading(true);
+      setTimeout(() => {
+        setIdx((i) => (i + 1) % tips.length);
+        setFading(false);
+      }, 300);
+    }, 4000);
+    return () => clearInterval(id);
+  }, [tips.length]);
+
+  function goTo(i: number) {
+    if (i === idx) return;
+    setFading(true);
+    setTimeout(() => {
+      setIdx(i);
+      setFading(false);
+    }, 300);
+  }
+
   return (
     <Card
       tone="yellow"
       size="base"
-      className="!p-lg flex flex-col gap-sm animate-fade-in transition-all duration-200 ease-out"
+      className="!p-lg flex flex-col gap-sm animate-fade-in"
     >
       <div className="flex items-center gap-xs">
         <span className="inline-flex items-center justify-center w-7 h-7 rounded-full bg-primary text-on-primary">
@@ -1054,25 +985,33 @@ function TipCard({ t }: { t: FraudCopy }) {
           {t.sidebar.tipTitle}
         </span>
       </div>
-      <p className="text-body-md text-primary">{t.sidebar.tipBody}</p>
-      {expanded && (
-        <ul className="list-disc pl-md space-y-xxs text-body-sm text-primary">
-          {t.sidebar.tipExpanded.map((line) => (
-            <li key={line}>{line}</li>
+
+      <p
+        className="text-body-md text-primary min-h-[72px] transition-opacity duration-300"
+        style={{ opacity: fading ? 0 : 1 }}
+      >
+        {tips[idx]}
+      </p>
+
+      <div className="flex items-center justify-between border-t border-primary/15 pt-sm mt-xs">
+        <div className="flex items-center gap-[6px]">
+          {tips.map((_, i) => (
+            <button
+              key={i}
+              onClick={() => goTo(i)}
+              className={cn(
+                "rounded-full transition-all duration-300",
+                i === idx
+                  ? "w-4 h-[6px] bg-primary"
+                  : "w-[6px] h-[6px] bg-primary/30 hover:bg-primary/60",
+              )}
+              aria-label={`${i + 1} / ${tips.length}`}
+            />
           ))}
-        </ul>
-      )}
-      <div className="mt-xs flex items-center justify-between border-t border-primary/15 pt-sm">
-        <span className="text-caption-bold text-primary">
-          {t.sidebar.tipProgress}
+        </div>
+        <span className="text-caption text-primary/60">
+          {idx + 1} / {tips.length}
         </span>
-        <Button
-          variant="link"
-          onClick={() => setExpanded((v) => !v)}
-          className="!text-primary"
-        >
-          {expanded ? t.actions.close : t.sidebar.tipMore}
-        </Button>
       </div>
     </Card>
   );
@@ -1166,19 +1105,15 @@ function ScenarioDetailModal({
   scenario,
   status,
   bestScore,
-  isFavorite,
   onClose,
   onStart,
-  onToggleFavorite,
 }: {
   t: FraudCopy;
   scenario: FraudSimScenario;
   status: FraudSimStatus;
   bestScore?: number;
-  isFavorite: boolean;
   onClose: () => void;
   onStart: () => void;
-  onToggleFavorite: () => void;
 }) {
   return (
     <ModalShell title={scenario.title} onClose={onClose} closeLabel={t.actions.close}>
@@ -1241,15 +1176,15 @@ function ScenarioDetailModal({
           <p className="text-body-md text-ink">{scenario.learnerRole}</p>
         </div>
 
-        <div className="flex flex-col-reverse md:flex-row md:items-center gap-sm md:justify-between mt-xs">
-          <Button variant="ghost" onClick={onToggleFavorite}>
-            {isFavorite ? t.actions.removeFavorite : t.actions.addFavorite}
-          </Button>
+        <div className="flex flex-col-reverse md:flex-row md:items-center gap-sm md:justify-end mt-xs">
           <div className="flex gap-xs">
             <Button variant="secondary" onClick={onClose}>
               {t.actions.cancel}
             </Button>
-            <Button variant="primary" onClick={onStart}>
+            <Button
+              variant="primary"
+              onClick={onStart}
+            >
               {primaryActionLabel(t, status)}
             </Button>
           </div>
@@ -2071,7 +2006,7 @@ function ModalShell({
   size?: "default" | "wide";
   stepIndicator?: ReactNode;
 }) {
-  return (
+  return createPortal(
     <div
       role="dialog"
       aria-modal="true"
@@ -2112,6 +2047,7 @@ function ModalShell({
         </div>
         <div className="p-lg overflow-y-auto">{children}</div>
       </div>
-    </div>
+    </div>,
+    document.body,
   );
 }

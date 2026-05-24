@@ -102,6 +102,12 @@ export const Icon = {
       <path d="M4 2.5h8V6a4 4 0 0 1-8 0V2.5ZM6 11h4v3H6v-3ZM2.5 3.5H4M12 3.5h1.5" stroke="currentColor" strokeWidth="1.4" strokeLinejoin="round" />
     </svg>
   ),
+  User: (p: IconProps) => (
+    <svg width="16" height="16" viewBox="0 0 16 16" fill="none" {...p} aria-hidden>
+      <circle cx="8" cy="5.5" r="2.5" stroke="currentColor" strokeWidth="1.4" />
+      <path d="M2.5 14a5.5 5.5 0 0 1 11 0" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" />
+    </svg>
+  ),
   Close: (p: IconProps) => (
     <svg width="16" height="16" viewBox="0 0 16 16" fill="none" {...p} aria-hidden>
       <path d="M3.5 3.5l9 9M12.5 3.5l-9 9" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
@@ -110,6 +116,11 @@ export const Icon = {
   Chevron: (p: IconProps) => (
     <svg width="16" height="16" viewBox="0 0 16 16" fill="none" {...p} aria-hidden>
       <path d="M6 3.5l4.5 4.5L6 12.5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+    </svg>
+  ),
+  Pencil: (p: IconProps) => (
+    <svg width="16" height="16" viewBox="0 0 16 16" fill="none" {...p} aria-hidden>
+      <path d="M11 2.5l2.5 2.5-8 8H3v-2.5l8-8Z" stroke="currentColor" strokeWidth="1.4" strokeLinejoin="round" />
     </svg>
   ),
 } as const;

@@ -3,8 +3,10 @@ import { useLocation, useNavigate } from "react-router-dom";
 import { useAuth } from "../../auth/AuthProvider";
 import { isAdmin } from "../../auth/permissions";
 import { useT } from "../../i18n";
+import { Modal } from "../ui/Modal";
 import { LanguageSwitcher } from "../ui/LanguageSwitcher";
 import { ThemeToggle } from "../ui/ThemeToggle";
+import { ProfileSettings } from "../../features/profile";
 import { Icon } from "./icons";
 import { cn } from "../../lib/cn";
 
@@ -60,6 +62,7 @@ function ProfileMenu() {
   const location = useLocation();
   const { user, roles, logout } = useAuth();
   const [open, setOpen] = useState(false);
+  const [settingsOpen, setSettingsOpen] = useState(false);
   const [lastPath, setLastPath] = useState(location.pathname);
   const wrapRef = useRef<HTMLDivElement | null>(null);
 
@@ -114,6 +117,10 @@ function ProfileMenu() {
   }
 
   return (
+    <>
+    <Modal open={settingsOpen} onClose={() => setSettingsOpen(false)} title="Profil sozlamalari">
+      <ProfileSettings />
+    </Modal>
     <div ref={wrapRef} className="relative">
       <button
         type="button"
@@ -159,9 +166,9 @@ function ProfileMenu() {
             onClick={() => go(`${sectionPrefix}/notifications`)}
           />
           <MenuItem
-            icon={<Icon.Cog />}
+            icon={<Icon.User />}
             label={labels.settings}
-            onClick={() => go(`${sectionPrefix}/settings`)}
+            onClick={() => { setOpen(false); setSettingsOpen(true); }}
           />
 
           <div className="my-xs border-t border-hairline-soft" />
@@ -175,6 +182,7 @@ function ProfileMenu() {
         </div>
       )}
     </div>
+    </>
   );
 }
 

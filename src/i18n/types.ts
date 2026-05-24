@@ -292,10 +292,7 @@ export type LandingContent = {
         bestScore: string;
         passedFailed: string;
         tipTitle: string;
-        tipBody: string;
-        tipProgress: string;
-        tipMore: string;
-        tipExpanded: ReadonlyArray<string>;
+        tips: ReadonlyArray<string>;
       };
       detail: {
         durationLabel: string;

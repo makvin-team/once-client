@@ -49,5 +49,5 @@ export function AdminLayout() {
     },
   ];
 
-  return <AppShell sections={sections} />;
+  return <AppShell sections={sections} hideQuickQuestions />;
 }

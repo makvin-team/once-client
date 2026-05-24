@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
+import { useLocale } from "../../i18n";
 import { Badge } from "../../components/ui/Badge";
 import { Button } from "../../components/ui/Button";
 import { Card } from "../../components/ui/Card";
@@ -6,7 +7,7 @@ import { EmptyState } from "../../components/app/EmptyState";
 import { Icon } from "../../components/app/icons";
 import { Input } from "../../components/ui/Input";
 import { cn } from "../../lib/cn";
-import { fraudService } from "../../services/fraud.service";
+import { fraudService, type AdminFraudScenario, type MultiLangValue, type UpdateFraudScenarioPayload } from "../../services/fraud.service";
 import type {
   FraudSimDifficulty,
   FraudSimRisk,
@@ -93,9 +94,10 @@ const RISK_OPTS: Array<{ value: FraudSimRisk | ""; label: string }> = [
 type DrawerProps = {
   scenario: FraudSimScenario | null;
   onClose: () => void;
+  onUpdated: (s: FraudSimScenario) => void;
 };
 
-function ScenarioDrawer({ scenario, onClose }: DrawerProps) {
+function ScenarioDrawer({ scenario, onClose, onUpdated }: DrawerProps) {
   const open = scenario !== null;
 
   useEffect(() => {
@@ -124,16 +126,86 @@ function ScenarioDrawer({ scenario, onClose }: DrawerProps) {
           open ? "translate-x-0" : "translate-x-full",
         )}
       >
-        {scenario && <DrawerContent scenario={scenario} onClose={onClose} />}
+        {scenario && <DrawerContent scenario={scenario} onClose={onClose} onUpdated={onUpdated} />}
       </div>
     </>
   );
 }
 
-function DrawerContent({ scenario, onClose }: { scenario: FraudSimScenario; onClose: () => void }) {
+function DrawerContent({ scenario, onClose, onUpdated }: { scenario: FraudSimScenario; onClose: () => void; onUpdated: (s: FraudSimScenario) => void }) {
   const redFlags = scenario.redFlagOptions as RedFlagOption[];
   const decisions = scenario.decisionOptions as DecisionOption[];
   const correctFlagsCount = redFlags.filter(f => f.correct).length;
+
+  const [editing, setEditing] = useState(false);
+  const [loadingLangs, setLoadingLangs] = useState(false); // true while fetching all 4 lang variants
+  const [saving, setSaving] = useState(false);
+  const [saveError, setSaveError] = useState<string | null>(null);
+
+  const [form, setForm] = useState<UpdateFraudScenarioPayload>({
+    title:            { uz: "", ru: "", en: "", cyrl: "" },
+    description:      { uz: "", ru: "", en: "", cyrl: "" },
+    learnerRole:      { uz: "", ru: "", en: "", cyrl: "" },
+    playUrl:          null,
+    estimatedMinutes: 0,
+    passScore:        0,
+  });
+
+  function startEdit() {
+    // Show the form immediately using the currently visible (localized) text as a
+    // placeholder, then replace with full multilang data once it loads.
+    const cur = scenario.title;
+    setForm({
+      title:            { uz: cur, ru: cur, en: cur, cyrl: cur },
+      description:      { uz: scenario.description, ru: scenario.description, en: scenario.description, cyrl: scenario.description },
+      learnerRole:      { uz: scenario.learnerRole, ru: scenario.learnerRole, en: scenario.learnerRole, cyrl: scenario.learnerRole },
+      playUrl:          scenario.playUrl ?? null,
+      estimatedMinutes: scenario.estimatedMinutes,
+      passScore:        scenario.passScore,
+    });
+    setEditing(true);
+    setLoadingLangs(true);
+    fraudService.getAdminScenarios()
+      .then(list => {
+        const found = list.find(s => s.id === Number(scenario.id));
+        if (!found) return;
+        setForm({
+          title:            { uz: found.title.uz ?? "", ru: found.title.ru ?? "", en: found.title.en ?? "", cyrl: found.title.cyrl ?? "" },
+          description:      { uz: found.description.uz ?? "", ru: found.description.ru ?? "", en: found.description.en ?? "", cyrl: found.description.cyrl ?? "" },
+          learnerRole:      { uz: found.learnerRole.uz ?? "", ru: found.learnerRole.ru ?? "", en: found.learnerRole.en ?? "", cyrl: found.learnerRole.cyrl ?? "" },
+          playUrl:          found.playUrl ?? null,
+          estimatedMinutes: found.estimatedMinutes,
+          passScore:        found.passScore,
+        });
+      })
+      .finally(() => setLoadingLangs(false));
+  }
+
+  function setLang(field: "title" | "description" | "learnerRole", lang: keyof MultiLangValue, value: string) {
+    setForm(prev => ({ ...prev, [field]: { ...prev[field], [lang]: value } }));
+  }
+
+  async function save() {
+    setSaving(true);
+    setSaveError(null);
+    try {
+      await fraudService.updateScenario(Number(scenario.id), form);
+      onUpdated({
+        ...scenario,
+        title:            form.title.uz ?? scenario.title,
+        description:      form.description.uz ?? scenario.description,
+        learnerRole:      form.learnerRole.uz ?? scenario.learnerRole,
+        estimatedMinutes: form.estimatedMinutes,
+        passScore:        form.passScore,
+        playUrl:          form.playUrl ?? undefined,
+      });
+      setEditing(false);
+    } catch {
+      setSaveError("Failed to save. Try again.");
+    } finally {
+      setSaving(false);
+    }
+  }
 
   return (
     <div className="flex flex-col h-full">
@@ -147,104 +219,205 @@ function DrawerContent({ scenario, onClose }: { scenario: FraudSimScenario; onCl
           </div>
           <h2 className="text-heading-4 text-ink font-display leading-snug">{scenario.title}</h2>
         </div>
-        <button
-          onClick={onClose}
-          className="shrink-0 p-xs rounded-lg hover:bg-surface-soft text-slate hover:text-ink transition-colors"
-        >
-          <Icon.Close />
-        </button>
+        <div className="flex items-center gap-xs ml-sm shrink-0">
+          {!editing && (
+            <button
+              onClick={startEdit}
+              className="flex items-center gap-xs px-sm py-xs rounded-lg border border-hairline-strong bg-canvas hover:bg-surface-soft text-body-sm text-ink transition-colors"
+            >
+              <Icon.Pencil />
+              Edit
+            </button>
+          )}
+          <button
+            onClick={onClose}
+            className="p-xs rounded-lg hover:bg-surface-soft text-slate hover:text-ink transition-colors"
+          >
+            <Icon.Close />
+          </button>
+        </div>
       </div>
 
-      {/* scrollable body */}
-      <div className="flex-1 overflow-y-auto p-lg space-y-lg">
-        {/* description */}
-        <p className="text-body-md text-slate">{scenario.description}</p>
+      {editing ? (
+        /* ── Edit form ── */
+        <div className="flex flex-col h-full overflow-hidden">
+          <div className="flex-1 overflow-y-auto p-lg space-y-lg">
+            {loadingLangs && (
+              <p className="text-caption text-slate">Loading all language variants…</p>
+            )}
+            <MultiLangSection
+              label="Title"
+              value={form.title}
+              onChange={(lang, val) => setLang("title", lang, val)}
+            />
+            <MultiLangSection
+              label="Description"
+              value={form.description}
+              onChange={(lang, val) => setLang("description", lang, val)}
+              multiline
+            />
+            <MultiLangSection
+              label="Learner Role"
+              value={form.learnerRole}
+              onChange={(lang, val) => setLang("learnerRole", lang, val)}
+              multiline
+            />
 
-        {/* meta row */}
-        <div className="grid grid-cols-2 gap-sm">
-          <MetaItem icon={<Icon.Bolt />} label="Duration" value={`${scenario.estimatedMinutes} min`} />
-          <MetaItem icon={<Icon.Chart />} label="Pass Score" value={`${scenario.passScore}%`} />
-          <MetaItem icon={<Icon.Users />} label="Total Attempts" value={String(scenario.attempts)} />
-          <MetaItem icon={<Icon.Trophy />} label="Avg Score" value={scenario.averageScore > 0 ? `${scenario.averageScore}%` : "—"} />
-        </div>
-
-        {/* skills */}
-        {scenario.skills.length > 0 && (
-          <Section title="Skills">
-            <div className="flex flex-wrap gap-xs">
-              {scenario.skills.map(skill => (
-                <span key={skill} className="px-sm py-xs rounded-lg bg-surface-soft text-caption-bold text-slate">
-                  {skill}
-                </span>
-              ))}
+            <div className="grid grid-cols-2 gap-sm">
+              <div>
+                <label className="text-caption-bold text-slate block mb-xs">Duration (min)</label>
+                <Input
+                  type="number"
+                  value={form.estimatedMinutes}
+                  onChange={e => setForm(p => ({ ...p, estimatedMinutes: Number(e.target.value) }))}
+                />
+              </div>
+              <div>
+                <label className="text-caption-bold text-slate block mb-xs">Pass Score (%)</label>
+                <Input
+                  type="number"
+                  value={form.passScore}
+                  onChange={e => setForm(p => ({ ...p, passScore: Number(e.target.value) }))}
+                />
+              </div>
             </div>
-          </Section>
-        )}
 
-        {/* scenario content */}
-        <Section title="Context">
-          <p className="text-body-sm text-ink leading-relaxed">{scenario.context}</p>
-        </Section>
+            <div>
+              <label className="text-caption-bold text-slate block mb-xs">Play URL</label>
+              <Input
+                placeholder="https://… or /internal/path"
+                value={form.playUrl ?? ""}
+                onChange={e => setForm(p => ({ ...p, playUrl: e.target.value || null }))}
+              />
+            </div>
 
-        <div className="grid grid-cols-1 gap-sm">
-          <LabelValue label="Learner Role" value={scenario.learnerRole} />
-          <LabelValue label="Task" value={scenario.task} />
+            {saveError && (
+              <p className="text-caption text-error">{saveError}</p>
+            )}
+          </div>
+
+          {/* footer */}
+          <div className="flex items-center justify-end gap-sm p-lg border-t border-hairline-soft shrink-0">
+            <Button variant="ghost" size="md" onClick={() => setEditing(false)} disabled={saving}>
+              Cancel
+            </Button>
+            <Button variant="primary" size="md" onClick={save} disabled={saving}>
+              {saving ? "Saving…" : "Save"}
+            </Button>
+          </div>
         </div>
+      ) : (
+        /* ── View mode ── */
+        <div className="flex-1 overflow-y-auto p-lg space-y-lg">
+          <p className="text-body-md text-slate">{scenario.description}</p>
 
-        {/* red flags */}
-        <Section title={`Red Flags (${correctFlagsCount} correct / ${redFlags.length} total)`}>
-          <ul className="space-y-xs">
-            {redFlags.map(f => (
-              <li key={f.id} className="flex items-start gap-sm">
-                <span
-                  className={cn(
-                    "mt-[3px] shrink-0 w-4 h-4 rounded-full flex items-center justify-center text-[10px]",
-                    f.correct
-                      ? "bg-success-accent text-on-primary"
-                      : "bg-surface-soft text-slate",
-                  )}
-                >
-                  {f.correct ? "✓" : "✗"}
-                </span>
-                <span className={cn("text-body-sm", f.correct ? "text-ink" : "text-slate")}>
-                  {f.label}
-                </span>
-              </li>
-            ))}
-          </ul>
-        </Section>
+          <div className="grid grid-cols-2 gap-sm">
+            <MetaItem icon={<Icon.Bolt />} label="Duration" value={`${scenario.estimatedMinutes} min`} />
+            <MetaItem icon={<Icon.Chart />} label="Pass Score" value={`${scenario.passScore}%`} />
+            <MetaItem icon={<Icon.Users />} label="Total Attempts" value={String(scenario.attempts)} />
+            <MetaItem icon={<Icon.Trophy />} label="Avg Score" value={scenario.averageScore > 0 ? `${scenario.averageScore}%` : "—"} />
+          </div>
 
-        {/* decision options */}
-        <Section title="Decision Options">
-          <ul className="space-y-xs">
-            {decisions.map(d => (
-              <li key={d.id} className="flex items-start gap-sm">
-                <span
-                  className={cn(
-                    "mt-[3px] shrink-0 w-4 h-4 rounded-full flex items-center justify-center text-[10px]",
-                    d.correct
-                      ? "bg-success-accent text-on-primary"
-                      : "bg-surface-soft text-slate",
-                  )}
-                >
-                  {d.correct ? "✓" : "✗"}
-                </span>
-                <span className={cn("text-body-sm font-medium", d.correct ? "text-ink" : "text-slate")}>
-                  {d.label}
-                </span>
-              </li>
-            ))}
-          </ul>
-        </Section>
+          {scenario.skills.length > 0 && (
+            <Section title="Skills">
+              <div className="flex flex-wrap gap-xs">
+                {scenario.skills.map(skill => (
+                  <span key={skill} className="px-sm py-xs rounded-lg bg-surface-soft text-caption-bold text-slate">
+                    {skill}
+                  </span>
+                ))}
+              </div>
+            </Section>
+          )}
 
-        {/* explanation + recommendation */}
-        <Section title="Explanation">
-          <p className="text-body-sm text-ink leading-relaxed">{scenario.explanation}</p>
-        </Section>
+          <Section title="Context">
+            <p className="text-body-sm text-ink leading-relaxed">{scenario.context}</p>
+          </Section>
 
-        <Section title="Recommendation">
-          <p className="text-body-sm text-ink leading-relaxed">{scenario.recommendation}</p>
-        </Section>
+          <div className="grid grid-cols-1 gap-sm">
+            <LabelValue label="Learner Role" value={scenario.learnerRole} />
+            <LabelValue label="Task" value={scenario.task} />
+            {scenario.playUrl && (
+              <LabelValue label="Play URL" value={scenario.playUrl} />
+            )}
+          </div>
+
+          <Section title={`Red Flags (${correctFlagsCount} correct / ${redFlags.length} total)`}>
+            <ul className="space-y-xs">
+              {redFlags.map(f => (
+                <li key={f.id} className="flex items-start gap-sm">
+                  <span className={cn("mt-[3px] shrink-0 w-4 h-4 rounded-full flex items-center justify-center text-[10px]", f.correct ? "bg-success-accent text-on-primary" : "bg-surface-soft text-slate")}>
+                    {f.correct ? "✓" : "✗"}
+                  </span>
+                  <span className={cn("text-body-sm", f.correct ? "text-ink" : "text-slate")}>{f.label}</span>
+                </li>
+              ))}
+            </ul>
+          </Section>
+
+          <Section title="Decision Options">
+            <ul className="space-y-xs">
+              {decisions.map(d => (
+                <li key={d.id} className="flex items-start gap-sm">
+                  <span className={cn("mt-[3px] shrink-0 w-4 h-4 rounded-full flex items-center justify-center text-[10px]", d.correct ? "bg-success-accent text-on-primary" : "bg-surface-soft text-slate")}>
+                    {d.correct ? "✓" : "✗"}
+                  </span>
+                  <span className={cn("text-body-sm font-medium", d.correct ? "text-ink" : "text-slate")}>{d.label}</span>
+                </li>
+              ))}
+            </ul>
+          </Section>
+
+          <Section title="Explanation">
+            <p className="text-body-sm text-ink leading-relaxed">{scenario.explanation}</p>
+          </Section>
+
+          <Section title="Recommendation">
+            <p className="text-body-sm text-ink leading-relaxed">{scenario.recommendation}</p>
+          </Section>
+        </div>
+      )}
+    </div>
+  );
+}
+
+const LANG_LABELS: Record<keyof MultiLangValue, string> = {
+  uz: "UZ (Latin)", ru: "RU", en: "EN", cyrl: "UZ (Cyrl)",
+};
+
+function MultiLangSection({
+  label,
+  value,
+  onChange,
+  multiline = false,
+}: {
+  label: string;
+  value: MultiLangValue;
+  onChange: (lang: keyof MultiLangValue, val: string) => void;
+  multiline?: boolean;
+}) {
+  return (
+    <div>
+      <p className="text-caption-bold text-slate uppercase tracking-wide mb-sm">{label}</p>
+      <div className="grid grid-cols-1 gap-xs">
+        {(Object.keys(LANG_LABELS) as Array<keyof MultiLangValue>).map(lang => (
+          <div key={lang}>
+            <label className="text-caption text-slate block mb-[2px]">{LANG_LABELS[lang]}</label>
+            {multiline ? (
+              <textarea
+                className="w-full rounded-lg border border-hairline-strong bg-canvas px-md py-sm text-body-sm text-ink focus:outline-none focus:border-brand-blue focus:border-2 transition-colors resize-none"
+                rows={3}
+                value={value[lang] ?? ""}
+                onChange={e => onChange(lang, e.target.value)}
+              />
+            ) : (
+              <Input
+                value={value[lang] ?? ""}
+                onChange={e => onChange(lang, e.target.value)}
+              />
+            )}
+          </div>
+        ))}
       </div>
     </div>
   );
@@ -352,6 +525,7 @@ function ScenarioRow({ scenario, onClick }: RowProps) {
 // ── Main page ─────────────────────────────────────────────────────────────────
 
 export function AdminFraudScenarios() {
+  const { locale } = useLocale();
   const [scenarios, setScenarios]   = useState<FraudSimScenario[]>([]);
   const [loading, setLoading]       = useState(true);
   const [error, setError]           = useState<string | null>(null);
@@ -362,11 +536,13 @@ export function AdminFraudScenarios() {
   const [riskFilter, setRiskFilter] = useState<FraudSimRisk | "">("");
 
   useEffect(() => {
-    fraudService.getScenarios()
+    setLoading(true);
+    setError(null);
+    fraudService.getScenarios(locale)
       .then(setScenarios)
       .catch(() => setError("Failed to load scenarios. Check that the backend is running."))
       .finally(() => setLoading(false));
-  }, []);
+  }, [locale]);
 
   const filtered = useMemo(() => {
     const q = search.toLowerCase();
@@ -504,7 +680,14 @@ export function AdminFraudScenarios() {
       </div>
 
       {/* ── Drawer ── */}
-      <ScenarioDrawer scenario={selected} onClose={() => setSelected(null)} />
+      <ScenarioDrawer
+        scenario={selected}
+        onClose={() => setSelected(null)}
+        onUpdated={updated => {
+          setScenarios(prev => prev.map(s => s.id === updated.id ? updated : s));
+          setSelected(updated);
+        }}
+      />
     </div>
   );
 }

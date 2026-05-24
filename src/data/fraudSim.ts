@@ -117,6 +117,7 @@ export type FraudSimScenario = {
   recommendation: string;
   previousBest?: number;
   initialStatus: FraudSimStatus;
+  playUrl?: string;
 };
 
 // NOTE: Type/difficulty/risk/status labels are sourced from i18n via

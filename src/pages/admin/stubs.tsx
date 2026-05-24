@@ -3,6 +3,7 @@
 // each export with a full implementation in a follow-up session.
 
 import { StubPage } from "../../components/app/StubPage";
+import { ProfileSettings } from "../../features/profile";
 
 export function AdminOrg() {
   return (
@@ -145,11 +146,5 @@ export function AdminAudit() {
 }
 
 export function AdminSettings() {
-  return (
-    <StubPage
-      eyebrow="Settings"
-      title="Tizim sozlamalari"
-      description="Til, session timeout, password policy, AI policy, file types, data retention."
-    />
-  );
+  return <ProfileSettings />;
 }

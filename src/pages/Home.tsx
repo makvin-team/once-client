@@ -5,7 +5,6 @@ import { Hero } from "../components/sections/Hero";
 import { Problem } from "../components/sections/Problem";
 import { Solution } from "../components/sections/Solution";
 import { Features } from "../components/sections/Features";
-import { Fraud } from "../components/sections/Fraud";
 import { BusinessValue } from "../components/sections/BusinessValue";
 import { HowItWorks } from "../components/sections/HowItWorks";
 import { TargetUsers } from "../components/sections/TargetUsers";
@@ -32,8 +31,7 @@ export function Home() {
         <Problem />
         <Solution />
         <Features />
-        <Fraud />
-        <BusinessValue />
+<BusinessValue />
         <HowItWorks />
         <TargetUsers />
         <PilotPlan />

@@ -9,9 +9,10 @@ import { cn } from "../../lib/cn";
 type AppShellProps = {
   sections: ReadonlyArray<SidebarSection>;
   footer?: ReactNode;
+  hideQuickQuestions?: boolean;
 };
 
-export function AppShell({ sections, footer }: AppShellProps) {
+export function AppShell({ sections, footer, hideQuickQuestions }: AppShellProps) {
   const [mobileOpen, setMobileOpen] = useState(false);
 
   return (
@@ -46,7 +47,7 @@ export function AppShell({ sections, footer }: AppShellProps) {
         <main className="flex-1 px-md md:px-xl py-xl">
           <Outlet />
         </main>
-        <QuickQuestionsWidget />
+        {!hideQuickQuestions && <QuickQuestionsWidget />}
       </div>
     </div>
   );

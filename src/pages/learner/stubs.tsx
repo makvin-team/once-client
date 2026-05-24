@@ -3,6 +3,7 @@
 // empty state. Replace each export with a full implementation in a follow-up.
 
 import { StubPage } from "../../components/app/StubPage";
+import { ProfileSettings } from "../../features/profile";
 
 // LearnerAssistant lives in its own file — see ./Assistant.tsx.
 
@@ -47,11 +48,5 @@ export function LearnerNotifications() {
 }
 
 export function LearnerSettings() {
-  return (
-    <StubPage
-      eyebrow="Sozlamalar"
-      title="Profil va sozlamalar"
-      description="Profil, parol, til, bildirishnoma sozlamalari va feedback yuborish."
-    />
-  );
+  return <ProfileSettings />;
 }

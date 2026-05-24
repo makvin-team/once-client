@@ -16,7 +16,6 @@ export const landing = {
     links: [
       { label: "Problem", href: "#problem" },
       { label: "Features", href: "#features" },
-      { label: "Fraud Simulator", href: "#fraud" },
       { label: "Business Value", href: "#value" },
       { label: "How it works", href: "#how" },
       { label: "Pilot", href: "#pilot" },
@@ -409,7 +408,6 @@ export const landing = {
         links: [
           { label: "Problem", href: "#problem" },
           { label: "Features", href: "#features" },
-          { label: "Fraud Simulator", href: "#fraud" },
           { label: "Business Value", href: "#value" },
           { label: "How it works", href: "#how" },
         ],

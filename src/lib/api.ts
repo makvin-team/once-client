@@ -257,6 +257,17 @@ export async function submitLogout(): Promise<void> {
 // Attaches the Bearer access token, and on 401 transparently refreshes and
 // retries the request once. Use this for every authenticated API call so
 // expired access tokens don't surface to call sites.
+
+const LOCALE_STORAGE_KEY = "once.locale";
+
+function getAcceptLanguage(): string {
+  try {
+    return localStorage.getItem(LOCALE_STORAGE_KEY) ?? "en";
+  } catch {
+    return "en";
+  }
+}
+
 export async function authFetch(
   path: string,
   init: RequestInit = {},
@@ -271,6 +282,9 @@ export async function authFetch(
   if (init.body && !headers.has("Content-Type")) {
     headers.set("Content-Type", "application/json");
   }
+  if (!headers.has("Accept-Language")) {
+    headers.set("Accept-Language", getAcceptLanguage().toUpperCase());
+  }
 
   const res = await fetch(url, { ...init, headers });
   if (res.status !== 401) return res;
@@ -282,6 +296,9 @@ export async function authFetch(
   retryHeaders.set("Authorization", `Bearer ${refreshed.accessToken}`);
   if (init.body && !retryHeaders.has("Content-Type")) {
     retryHeaders.set("Content-Type", "application/json");
+  }
+  if (!retryHeaders.has("Accept-Language")) {
+    retryHeaders.set("Accept-Language", getAcceptLanguage().toUpperCase());
   }
   return fetch(url, { ...init, headers: retryHeaders });
 }

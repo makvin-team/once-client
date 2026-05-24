@@ -15,7 +15,6 @@ export const en: LandingContent = {
     links: [
       { label: "Problem", href: "#problem" },
       { label: "Features", href: "#features" },
-      { label: "Fraud Simulator", href: "#fraud" },
       { label: "Business Value", href: "#value" },
       { label: "How it works", href: "#how" },
       { label: "Pilot", href: "#pilot" },
@@ -423,7 +422,6 @@ export const en: LandingContent = {
         links: [
           { label: "Problem", href: "#problem" },
           { label: "Features", href: "#features" },
-          { label: "Fraud Simulator", href: "#fraud" },
           { label: "Business Value", href: "#value" },
           { label: "How it works", href: "#how" },
         ],
@@ -585,13 +583,10 @@ export const en: LandingContent = {
         bestScore: "Best score",
         passedFailed: "Passed / failed",
         tipTitle: "Tip",
-        tipBody:
+        tips: [
           "Read the scenario carefully, identify the red flags, and review every signal before deciding.",
-        tipProgress: "3 / 4 steps",
-        tipMore: "Read more",
-        tipExpanded: [
           "Always cross-check the domain, sender, and any link before clicking.",
-          "Treat urgency and secrecy as red flags — fraudsters lean on both.",
+          "Treat urgency and secrecy as red flags — fraudsters rely on both.",
           "When unsure, escalate to compliance instead of acting alone.",
         ],
       },

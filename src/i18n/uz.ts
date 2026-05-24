@@ -15,7 +15,6 @@ export const uz: LandingContent = {
     links: [
       { label: "Muammo", href: "#problem" },
       { label: "Imkoniyatlar", href: "#features" },
-      { label: "Fraud simulator", href: "#fraud" },
       { label: "Biznes qiymat", href: "#value" },
       { label: "Qanday ishlaydi", href: "#how" },
       { label: "Pilot", href: "#pilot" },
@@ -423,7 +422,6 @@ export const uz: LandingContent = {
         links: [
           { label: "Muammo", href: "#problem" },
           { label: "Imkoniyatlar", href: "#features" },
-          { label: "Fraud Simulator", href: "#fraud" },
           { label: "Biznes qiymat", href: "#value" },
           { label: "Qanday ishlaydi", href: "#how" },
         ],
@@ -585,11 +583,8 @@ export const uz: LandingContent = {
         bestScore: "Eng yaxshi ball",
         passedFailed: "O'tgan / o'tmagan",
         tipTitle: "Maslahat",
-        tipBody:
+        tips: [
           "Scenariyni diqqat bilan o'qing, red flag'larni aniqlang va qaror qabul qilishdan oldin barcha belgilarni tekshiring.",
-        tipProgress: "3 / 4 bosqich",
-        tipMore: "Batafsil ko'rish",
-        tipExpanded: [
           "Linkni bosishdan oldin domen, yuboruvchi va URL'ni tekshiring.",
           "Shoshilinch va sirli talab — bu klassik fraud belgilari.",
           "Shubha bo'lsa, yakka o'zingiz qaror qabul qilmang — compliance'ga eskalatsiya qiling.",

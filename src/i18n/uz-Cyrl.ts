@@ -16,7 +16,6 @@ export const uzCyrl: LandingContent = {
     links: [
       { label: "Муаммо", href: "#problem" },
       { label: "Имкониятлар", href: "#features" },
-      { label: "Fraud simulator", href: "#fraud" },
       { label: "Бизнес қиймат", href: "#value" },
       { label: "Қандай ишлайди", href: "#how" },
       { label: "Пилот", href: "#pilot" },
@@ -424,7 +423,6 @@ export const uzCyrl: LandingContent = {
         links: [
           { label: "Муаммо", href: "#problem" },
           { label: "Имкониятлар", href: "#features" },
-          { label: "Fraud Simulator", href: "#fraud" },
           { label: "Бизнес қиймат", href: "#value" },
           { label: "Қандай ишлайди", href: "#how" },
         ],
@@ -586,11 +584,8 @@ export const uzCyrl: LandingContent = {
         bestScore: "Энг яхши балл",
         passedFailed: "Ўтган / ўтмаган",
         tipTitle: "Маслаҳат",
-        tipBody:
+        tips: [
           "Сценарийни диққат билан ўқинг, red flag'ларни аниқланг ва қарор қабул қилишдан олдин барча белгиларни текширинг.",
-        tipProgress: "3 / 4 босқич",
-        tipMore: "Батафсил кўриш",
-        tipExpanded: [
           "Линкни босишдан олдин домен, юборувчи ва URL'ни текширинг.",
           "Шошилинч ва сирли талаб — бу классик fraud белгилари.",
           "Шубҳа бўлса, ёлғиз қарор қабул қилманг — compliance'га эскалация қилинг.",

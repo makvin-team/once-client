@@ -15,7 +15,6 @@ export const ru: LandingContent = {
     links: [
       { label: "Проблема", href: "#problem" },
       { label: "Возможности", href: "#features" },
-      { label: "Fraud simulator", href: "#fraud" },
       { label: "Бизнес-ценность", href: "#value" },
       { label: "Как это работает", href: "#how" },
       { label: "Пилот", href: "#pilot" },
@@ -423,7 +422,6 @@ export const ru: LandingContent = {
         links: [
           { label: "Проблема", href: "#problem" },
           { label: "Возможности", href: "#features" },
-          { label: "Fraud Simulator", href: "#fraud" },
           { label: "Бизнес-ценность", href: "#value" },
           { label: "Как это работает", href: "#how" },
         ],
@@ -585,11 +583,8 @@ export const ru: LandingContent = {
         bestScore: "Лучший балл",
         passedFailed: "Пройдено / не пройдено",
         tipTitle: "Совет",
-        tipBody:
+        tips: [
           "Внимательно прочитайте сценарий, найдите red flags и проверьте все сигналы до принятия решения.",
-        tipProgress: "3 / 4 этапа",
-        tipMore: "Подробнее",
-        tipExpanded: [
           "Перед кликом всегда сверяйте домен, отправителя и URL.",
           "Срочность и секретность — классические признаки фрода.",
           "Если сомневаетесь — эскалируйте в compliance, не действуйте в одиночку.",

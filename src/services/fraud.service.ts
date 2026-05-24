@@ -20,17 +20,10 @@ type BackendScenario = {
   averageScore: number
   attemptsCount: number
   updatedAt: string
-  skills: string[]
-  context: string
   learnerRole: string
-  task: string
-  evidence: unknown
-  redFlagOptions: Array<{ id: string; label: string; correct: boolean }>
-  decisionOptions: Array<{ id: string; label: string; correct: boolean }>
-  explanation: string
-  recommendation: string
   previousBest?: number | null
   initialStatus?: string | null
+  playUrl?: string | null
 }
 
 type BackendAttempt = {
@@ -78,17 +71,19 @@ function mapScenario(b: BackendScenario): FraudSimScenario {
     averageScore: b.averageScore,
     attempts: b.attemptsCount,
     updatedAt: b.updatedAt,
-    skills: b.skills,
-    context: b.context,
     learnerRole: b.learnerRole,
-    task: b.task,
-    evidence: b.evidence as FraudEvidence,
-    redFlagOptions: b.redFlagOptions,
-    decisionOptions: b.decisionOptions,
-    explanation: b.explanation,
-    recommendation: b.recommendation,
+    // play-mode fields not served by API — use mock data for simulation
+    skills: [],
+    context: "",
+    task: "",
+    evidence: {} as FraudEvidence,
+    redFlagOptions: [],
+    decisionOptions: [],
+    explanation: "",
+    recommendation: "",
     previousBest: b.previousBest ?? undefined,
     initialStatus: (b.initialStatus ?? "not_started") as FraudSimStatus,
+    playUrl: b.playUrl ?? undefined,
   }
 }
 
@@ -106,17 +101,52 @@ function mapAttempt(b: BackendAttempt): FraudAttemptRecord {
   }
 }
 
+// ---- admin types --------------------------------------------------------
+
+export type MultiLangValue = {
+  uz: string | null
+  ru: string | null
+  en: string | null
+  cyrl: string | null
+}
+
+export type AdminFraudScenario = {
+  id: number
+  title: MultiLangValue
+  description: MultiLangValue
+  learnerRole: MultiLangValue
+  fraudType: string
+  difficulty: string
+  riskLevel: string
+  estimatedMinutes: number
+  passScore: number
+  averageScore: number
+  attemptsCount: number
+  updatedAt: string
+  playUrl?: string | null
+}
+
+export type UpdateFraudScenarioPayload = {
+  title: MultiLangValue
+  description: MultiLangValue
+  learnerRole: MultiLangValue
+  playUrl?: string | null
+  estimatedMinutes: number
+  passScore: number
+}
+
 // ---- service -------------------------------------------------------------
 
-async function getJson<T>(path: string): Promise<T> {
-  const res = await authFetch(path)
+async function getJson<T>(path: string, locale?: string): Promise<T> {
+  const headers = locale ? { "Accept-Language": locale.toUpperCase() } : undefined
+  const res = await authFetch(path, { headers })
   if (!res.ok) throw new Error(`HTTP ${res.status}`)
   return res.json() as Promise<T>
 }
 
 export const fraudService = {
-  getScenarios: async (): Promise<FraudSimScenario[]> => {
-    const data = await getJson<BackendScenario[]>("/api/fraud/scenarios")
+  getScenarios: async (locale: string): Promise<FraudSimScenario[]> => {
+    const data = await getJson<BackendScenario[]>("/api/fraud/scenarios", locale)
     return data.map(mapScenario)
   },
 
@@ -124,9 +154,22 @@ export const fraudService = {
     return getJson<BackendStats>("/api/fraud/stats")
   },
 
-  getAttempts: async (): Promise<FraudAttemptRecord[]> => {
-    const data = await getJson<BackendAttempt[]>("/api/fraud/attempts")
+  getAttempts: async (locale: string): Promise<FraudAttemptRecord[]> => {
+    const data = await getJson<BackendAttempt[]>("/api/fraud/attempts", locale)
     return data.map(mapAttempt)
+  },
+
+  getAdminScenarios: async (): Promise<AdminFraudScenario[]> => {
+    // Send Accept-Language: ALL so the converter returns full multilang objects
+    return getJson<AdminFraudScenario[]>("/api/admin/fraud/scenarios", "ALL")
+  },
+
+  updateScenario: async (id: number, data: UpdateFraudScenarioPayload): Promise<void> => {
+    const res = await authFetch(`/api/admin/fraud/scenarios/${id}`, {
+      method: "PUT",
+      body: JSON.stringify(data),
+    })
+    if (!res.ok) throw new Error(`HTTP ${res.status}`)
   },
 
   submitAttempt: async (payload: SubmitAttemptPayload): Promise<FraudAttemptRecord> => {

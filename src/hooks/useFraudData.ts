@@ -9,6 +9,29 @@ import {
   type FraudSimScenario,
 } from "../data/fraudSim"
 
+// fraudType bo'yicha mock play content lookup (evidence, redFlags, decisions, ...)
+const MOCK_PLAY_BY_TYPE = Object.fromEntries(
+  mockFraudScenarios.map((m) => [m.fraudType, m])
+) as Record<string, (typeof mockFraudScenarios)[number]>
+
+function enrichWithPlayContent(scenarios: FraudSimScenario[]): FraudSimScenario[] {
+  return scenarios.map((s) => {
+    const mock = MOCK_PLAY_BY_TYPE[s.fraudType]
+    if (!mock) return s
+    return {
+      ...s,
+      context:        mock.context,
+      task:           mock.task,
+      skills:         mock.skills,
+      evidence:       mock.evidence,
+      redFlagOptions: mock.redFlagOptions,
+      decisionOptions: mock.decisionOptions,
+      explanation:    mock.explanation,
+      recommendation: mock.recommendation,
+    }
+  })
+}
+
 export type { SubmitAttemptPayload }
 
 export type FraudStats = {
@@ -38,7 +61,7 @@ function mapStats(b: BackendStats): FraudStats {
   }
 }
 
-export function useFraudData(): UseFraudDataResult {
+export function useFraudData(locale: string): UseFraudDataResult {
   const [scenarios, setScenarios] = useState<FraudSimScenario[]>(mockFraudScenarios as FraudSimScenario[])
   const [stats, setStats]         = useState<FraudStats>({ ...mockLearnerStats })
   const [attempts, setAttempts]   = useState<FraudAttemptRecord[]>([...mockLearnerAttempts])
@@ -48,13 +71,15 @@ export function useFraudData(): UseFraudDataResult {
   useEffect(() => {
     if (!API_BASE_URL) return
 
+    setLoading(true)
     Promise.all([
-      fraudService.getScenarios(),
+      fraudService.getScenarios(locale),
       fraudService.getStats(),
-      fraudService.getAttempts(),
+      fraudService.getAttempts(locale),
     ])
       .then(([s, st, a]) => {
-        setScenarios(s.length > 0 ? s : (mockFraudScenarios as FraudSimScenario[]))
+        const enriched = enrichWithPlayContent(s)
+        setScenarios(enriched.length > 0 ? enriched : (mockFraudScenarios as FraudSimScenario[]))
         setStats(mapStats(st))
         setAttempts(a)
         setApiAvailable(true)
@@ -65,7 +90,8 @@ export function useFraudData(): UseFraudDataResult {
       .finally(() => {
         setLoading(false)
       })
-  }, [])
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [locale])
 
   async function submitAttempt(payload: SubmitAttemptPayload): Promise<FraudAttemptRecord | null> {
     if (!apiAvailable) return null
