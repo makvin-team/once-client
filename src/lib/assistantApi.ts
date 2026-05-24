@@ -192,8 +192,14 @@ export async function getMessages(conversationId: string): Promise<LoadedMessage
   const page = await getJson<Paged<MessageDto>>(
     `/api/assistant/conversations/${conversationId}/messages`,
   );
+  // ai-backend returns messages newest-first (created_at desc); render the
+  // conversation oldest-first so it reads top-to-bottom.
+  const items = [...page.items].sort(
+    (a, b) =>
+      new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime(),
+  );
   const out: LoadedMessage[] = [];
-  for (const m of page.items) {
+  for (const m of items) {
     out.push({ role: "user", text: m.question, createdAt: m.createdAt });
     out.push({
       role: "assistant",
