@@ -211,6 +211,7 @@ export type LandingContent = {
       feedbackThanks: string;
       privacyNote: string;
       typing: string;
+      loadingHistory: string;
       renameSession: string;
       deleteSession: string;
       openSessions: string;

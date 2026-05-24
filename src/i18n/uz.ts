@@ -493,6 +493,7 @@ export const uz: LandingContent = {
       privacyNote:
         "Yordamchi faqat bankning ichki hujjatlaridan foydalanadi. Mijozning maxfiy ma'lumotini joylashtirmang.",
       typing: "Yordamchi o'ylanmoqda…",
+      loadingHistory: "Suhbat yuklanmoqda…",
       renameSession: "Qayta nomlash",
       deleteSession: "O'chirish",
       openSessions: "Suhbatlar",

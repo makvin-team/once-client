@@ -493,6 +493,7 @@ export const en: LandingContent = {
       privacyNote:
         "The assistant uses internal bank documents only. Do not paste confidential customer data.",
       typing: "Assistant is thinking…",
+      loadingHistory: "Loading conversation…",
       renameSession: "Rename",
       deleteSession: "Delete",
       openSessions: "Sessions",

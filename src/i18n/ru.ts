@@ -493,6 +493,7 @@ export const ru: LandingContent = {
       privacyNote:
         "Ассистент использует только внутренние документы банка. Не вставляйте конфиденциальные данные клиента.",
       typing: "Ассистент думает…",
+      loadingHistory: "Загрузка беседы…",
       renameSession: "Переименовать",
       deleteSession: "Удалить",
       openSessions: "Сессии",

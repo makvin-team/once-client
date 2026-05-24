@@ -117,9 +117,10 @@ const includesTolerant = (haystack: string, needle: string): boolean => {
 const BRACKET_REGEX = /[[【]([^\]】]+?)[\]】]/g;
 
 // A bracket is a file citation when it looks like `name.ext` (optionally with
-// `#page=N`) — e.g. `[fraud-policy.pdf#page=4]`.
+// `#page=N`, or a comma-separated page list like `#page=4, 5`) — e.g.
+// `[fraud-policy.pdf#page=4]` or `[ABS_qollanma.pdf#page=4, 5]`.
 const isFileLikeReference = (value: string): boolean =>
-  /[^\s]\.[a-zA-Z0-9]{1,5}(?:#page=\d+)?$/.test(value.trim());
+  /[^\s]\.[a-zA-Z0-9]{1,5}(?:#page=\d+(?:\s*,\s*\d+)*)?$/.test(value.trim());
 
 const matchesAvailableSource = (reference: string, source: string): boolean => {
   const a = canonicalizeReferenceForMatch(reference);

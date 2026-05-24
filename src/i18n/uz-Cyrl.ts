@@ -494,6 +494,7 @@ export const uzCyrl: LandingContent = {
       privacyNote:
         "Ёрдамчи фақат банкнинг ички ҳужжатларидан фойдаланади. Мижознинг махфий маълумотини жойлаштирманг.",
       typing: "Ёрдамчи ўйланмоқда…",
+      loadingHistory: "Суҳбат юкланмоқда…",
       renameSession: "Қайта номлаш",
       deleteSession: "Ўчириш",
       openSessions: "Суҳбатлар",

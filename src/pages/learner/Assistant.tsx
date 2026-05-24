@@ -33,6 +33,9 @@ export function LearnerAssistant() {
   const [activeId, setActiveId] = useState<string | null>(null);
   const [draft, setDraft] = useState("");
   const [pending, setPending] = useState(false);
+  // Which session is currently streaming, so the typing indicator only shows in
+  // that conversation — not in another one the user switches to mid-stream.
+  const [streamingSessionId, setStreamingSessionId] = useState<string | null>(null);
   const [showSessionsOnMobile, setShowSessionsOnMobile] = useState(false);
 
   const messagesRef = useRef<HTMLDivElement | null>(null);
@@ -141,11 +144,15 @@ export function LearnerAssistant() {
         ),
       );
       setDraft("");
+      // Reset the auto-grown textarea back to one row — clearing the value
+      // alone leaves it stuck at the multi-line height it expanded to.
+      if (textareaRef.current) textareaRef.current.style.height = "auto";
       setShowSessionsOnMobile(false);
       track("learner_assistant_message_sent" as never, {
         length: prompt.length,
       });
       setPending(true);
+      setStreamingSessionId(session!.id);
 
       // Insert an empty assistant message we append streamed tokens to.
       const assistantId = makeId();
@@ -210,6 +217,7 @@ export function LearnerAssistant() {
               ),
             );
             setPending(false);
+            setStreamingSessionId(null);
             textareaRef.current?.focus();
           },
           onError: () => {
@@ -220,6 +228,7 @@ export function LearnerAssistant() {
                 "Kechirasiz, javobni olishda xatolik yuz berdi. Qayta urinib ko'ring.",
             }));
             setPending(false);
+            setStreamingSessionId(null);
           },
         },
       );
@@ -278,8 +287,11 @@ export function LearnerAssistant() {
 
   const msgs = activeSession?.messages ?? [];
   const lastMsg = msgs[msgs.length - 1];
+  // Only show the typing indicator in the conversation that's actually
+  // streaming, and only until its first token lands.
   const showTyping =
-    pending && !(lastMsg?.role === "assistant" && lastMsg.text.length > 0);
+    streamingSessionId === activeId &&
+    !(lastMsg?.role === "assistant" && lastMsg.text.length > 0);
 
   return (
     <div className="-my-xl flex h-[calc(100vh-64px)] bg-canvas">
@@ -347,7 +359,16 @@ export function LearnerAssistant() {
           className="flex-1 overflow-y-auto px-md md:px-section"
         >
           <div className="max-w-[760px] mx-auto py-xl">
-            {activeSession && activeSession.messages.length > 0 ? (
+            {activeSession && !activeSession.loaded ? (
+              <div
+                className="flex items-center justify-center gap-sm py-2xl text-stone"
+                role="status"
+                aria-live="polite"
+              >
+                <Spinner />
+                <span className="text-body-sm">{copy.loadingHistory}</span>
+              </div>
+            ) : activeSession && activeSession.messages.length > 0 ? (
               <ul className="flex flex-col gap-lg">
                 {activeSession.messages
                   // Skip the empty assistant placeholder while it streams — the
