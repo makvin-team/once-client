@@ -13,7 +13,7 @@ ENV VITE_API_BASE_URL=$VITE_API_BASE_URL
 
 # URL of the externally-hosted hero demo video (CDN / object storage) so the
 # large media file never ships inside the image.
-ARG VITE_HERO_VIDEO_URL=
+ARG VITE_HERO_VIDEO_URL=https://stage-api.edcom.uz/gateway/api-filefs/api/public/97c3483aaaa84228921a2e5f46cc780f
 ENV VITE_HERO_VIDEO_URL=$VITE_HERO_VIDEO_URL
 
 RUN npm run build
