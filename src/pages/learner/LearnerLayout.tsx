@@ -21,10 +21,12 @@ export function LearnerLayout() {
     },
     {
       title: learner.practiceTitle,
+      // The simulator is served outside the SPA (reverse-proxied), so these go
+      // straight there via a full navigation (external) — no SPA round-trip.
       items: [
-        { to: "/learner/playground", label: learner.playground, icon: <Icon.Play /> },
-        { to: "/learner/dialog", label: learner.dialog, icon: <Icon.Chat /> },
-        { to: "/learner/fraud", label: learner.fraud, icon: <Icon.Shield /> },
+        { to: "/learner/simulator", external: true, label: learner.playground, icon: <Icon.Play /> },
+        { to: "/learner/simulator", external: true, label: learner.dialog, icon: <Icon.Chat /> },
+        { to: "/learner/simulator", external: true, label: learner.fraud, icon: <Icon.Shield /> },
       ],
     },
   ];

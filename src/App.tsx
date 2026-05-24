@@ -1,3 +1,4 @@
+import { useEffect } from "react";
 import { BrowserRouter, Navigate, Route, Routes } from "react-router-dom";
 import { AuthProvider } from "./auth/AuthProvider";
 import { RequireAuth } from "./auth/RequireAuth";
@@ -12,11 +13,8 @@ import { LearnerPlans } from "./pages/learner/Plans";
 import { LearnerPlanDetail } from "./pages/learner/PlanDetail";
 import { LearnerModuleDetail } from "./pages/learner/ModuleDetail";
 import { LearnerAssistant } from "./pages/learner/Assistant";
-import { LearnerFraud } from "./pages/learner/Fraud";
 import {
-  LearnerDialog,
   LearnerNotifications,
-  LearnerPlayground,
   LearnerProgress,
   LearnerSettings,
 } from "./pages/learner/stubs";
@@ -41,6 +39,17 @@ import {
   AdminSkills,
 } from "./pages/admin/stubs";
 
+// The Playground / Dialog / Fraud practice surfaces were consolidated into the
+// simulator, which is served outside the SPA (reverse-proxied) at
+// /learner/simulator. Reach it with a real browser navigation — a React-Router
+// redirect would only hit the SPA fallback, never the proxied page.
+function SimulatorRedirect() {
+  useEffect(() => {
+    window.location.replace("/learner/simulator");
+  }, []);
+  return null;
+}
+
 function App() {
   return (
     <BrowserRouter>
@@ -64,9 +73,9 @@ function App() {
                   element={<LearnerModuleDetail />}
                 />
                 <Route path="assistant" element={<LearnerAssistant />} />
-                <Route path="playground" element={<LearnerPlayground />} />
-                <Route path="dialog" element={<LearnerDialog />} />
-                <Route path="fraud" element={<LearnerFraud />} />
+                <Route path="playground" element={<SimulatorRedirect />} />
+                <Route path="dialog" element={<SimulatorRedirect />} />
+                <Route path="fraud" element={<SimulatorRedirect />} />
                 <Route path="progress" element={<LearnerProgress />} />
                 <Route path="notifications" element={<LearnerNotifications />} />
                 <Route path="settings" element={<LearnerSettings />} />

@@ -17,6 +17,9 @@ export type SidebarItem = {
   end?: boolean;
   permission?: Permission;
   badge?: number | string;
+  /** Render as a plain <a> (full navigation) — for pages served outside the
+   *  SPA, e.g. the reverse-proxied simulator at /learner/simulator. */
+  external?: boolean;
 };
 
 type SidebarProps = {
@@ -64,20 +67,11 @@ export function Sidebar({
                 </p>
               )}
               <ul className="flex flex-col gap-px px-xs">
-                {visible.map((item) => (
-                  <li key={item.to}>
-                    <NavLink
-                      to={item.to}
-                      end={item.end}
-                      className={({ isActive }) =>
-                        cn(
-                          "flex items-center gap-sm px-sm py-xs rounded-md text-body-sm-medium transition-colors",
-                          isActive
-                            ? "bg-surface text-ink"
-                            : "text-charcoal hover:bg-surface-soft hover:text-ink",
-                        )
-                      }
-                    >
+                {visible.map((item) => {
+                  const baseCls =
+                    "flex items-center gap-sm px-sm py-xs rounded-md text-body-sm-medium transition-colors";
+                  const inner = (
+                    <>
                       <span className="w-5 h-5 shrink-0 inline-flex items-center justify-center text-current">
                         {item.icon}
                       </span>
@@ -89,9 +83,39 @@ export function Sidebar({
                           {item.badge}
                         </span>
                       )}
-                    </NavLink>
-                  </li>
-                ))}
+                    </>
+                  );
+                  return (
+                    <li key={`${item.to}|${item.label}`}>
+                      {item.external ? (
+                        <a
+                          href={item.to}
+                          className={cn(
+                            baseCls,
+                            "text-charcoal hover:bg-surface-soft hover:text-ink",
+                          )}
+                        >
+                          {inner}
+                        </a>
+                      ) : (
+                        <NavLink
+                          to={item.to}
+                          end={item.end}
+                          className={({ isActive }) =>
+                            cn(
+                              baseCls,
+                              isActive
+                                ? "bg-surface text-ink"
+                                : "text-charcoal hover:bg-surface-soft hover:text-ink",
+                            )
+                          }
+                        >
+                          {inner}
+                        </NavLink>
+                      )}
+                    </li>
+                  );
+                })}
               </ul>
             </div>
           );
