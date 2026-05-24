@@ -1,102 +1,93 @@
 import { Link } from "react-router-dom";
 import { PageHeader } from "../../components/app/PageHeader";
-import { StatusPill, statusTone } from "../../components/app/StatusPill";
 import { Icon } from "../../components/app/icons";
-import { useAuth } from "../../auth/AuthProvider";
-import {
-  getProgressForUser,
-  mockLearningPlans,
-  mockModules,
-} from "../../data/mock";
+import { useTheoryCourse } from "../../data/theoryCourse";
 import { cn } from "../../lib/cn";
 
+// Theory Mode landing — the readable counterpart to the 3D Simulator.
+// Each card opens a pillar (AML / Cyber / Fraud / CX) which in turn lists
+// the five modules that mirror the simulator's scenarios. All copy comes
+// from the active-locale dictionary via useTheoryCourse().
+
 export function LearnerPlans() {
-  const { user } = useAuth();
-  if (!user) return null;
-  const progress = getProgressForUser(user.id);
-  const planIds = new Set(progress.map((p) => p.planId));
-  const myPlans = mockLearningPlans.filter((p) => planIds.has(p.id));
+  const { pillars, ui } = useTheoryCourse();
 
   return (
     <div>
       <PageHeader
-        title="O'quv rejalar"
-        description="Sizga biriktirilgan barcha o'quv rejalar. Modul tartibida o'tib boring."
+        eyebrow={ui.eyebrow}
+        title={ui.pageTitle}
+        description={ui.pageDescription}
       />
 
       <div className="grid gap-md md:grid-cols-2">
-        {myPlans.map((plan) => {
-          const planProgress = progress.filter((p) => p.planId === plan.id);
-          const completed = planProgress.filter(
-            (p) => p.status === "completed",
-          ).length;
-          const total = planProgress.length;
-          const percent =
-            total === 0
-              ? 0
-              : Math.round(
-                  planProgress.reduce((acc, p) => acc + (p.percent ?? 0), 0) /
-                    total,
-                );
+        {pillars.map((pillar) => {
+          const totalMinutes = pillar.modules.reduce(
+            (acc, m) => acc + m.durationMinutes,
+            0,
+          );
           return (
             <Link
-              key={plan.id}
-              to={`/learner/plans/${plan.id}`}
-              className="rounded-2xl border border-hairline-soft bg-canvas p-xl hover:border-hairline-strong transition-colors"
+              key={pillar.id}
+              to={`/learner/plans/${pillar.id}`}
+              className={cn(
+                "group rounded-2xl border border-hairline-soft bg-canvas p-xl",
+                "hover:border-hairline-strong transition-colors flex flex-col gap-md",
+              )}
             >
-              <div className="flex items-center gap-xs mb-md">
-                <StatusPill
-                  label={plan.status}
-                  tone={statusTone(plan.status)}
-                />
-                {plan.deadlineAt && (
-                  <span className="text-caption text-stone">
-                    deadline {new Date(plan.deadlineAt).toLocaleDateString()}
-                  </span>
-                )}
+              <div className="flex items-center gap-xs">
+                <span
+                  className={cn(
+                    "inline-flex items-center px-xs py-[2px] rounded-full text-caption-bold pastel",
+                    pillar.accent.chip,
+                    pillar.accent.chipText,
+                  )}
+                >
+                  {ui.pillarLabel} {pillar.priority}
+                </span>
+                <span className="text-caption text-stone">
+                  {ui.modulesCount(pillar.modules.length, totalMinutes)}
+                </span>
               </div>
-              <h2 className="text-heading-4 text-ink font-display">
-                {plan.name}
-              </h2>
-              <p className="mt-xs text-body-md text-slate">{plan.description}</p>
-              <div className="mt-md flex items-center gap-md">
-                <div className="flex-1 h-2 rounded-full bg-hairline-soft overflow-hidden">
-                  <div
-                    className="h-full bg-brand-blue"
-                    style={{ width: `${percent}%` }}
-                  />
-                </div>
-                <span className="text-body-sm-medium text-ink">{percent}%</span>
+
+              <div>
+                <h2 className="text-heading-3 text-ink font-display">
+                  {pillar.title}
+                </h2>
+                <p className="text-body-sm-medium text-steel mt-xxs">
+                  {pillar.subtitle}
+                </p>
               </div>
-              <p className="mt-xs text-caption text-stone">
-                {completed}/{total} modul yakunlangan
-              </p>
-              <ModuleStrip planModules={planProgress.map((p) => p.moduleId)} />
+
+              <p className="text-body-md text-slate">{pillar.description}</p>
+
+              <div className="mt-auto pt-md flex items-center justify-between">
+                <ul className="flex flex-wrap gap-xs">
+                  {pillar.modules.slice(0, 3).map((m) => (
+                    <li
+                      key={m.id}
+                      className="inline-flex items-center gap-xs px-xs py-1 rounded-md text-caption bg-surface text-charcoal"
+                    >
+                      <Icon.Book />
+                      <span className="max-w-[150px] truncate">
+                        {m.title.split(" · ")[0]}
+                      </span>
+                    </li>
+                  ))}
+                  {pillar.modules.length > 3 && (
+                    <li className="inline-flex items-center px-xs py-1 rounded-md text-caption bg-surface text-stone">
+                      +{pillar.modules.length - 3}
+                    </li>
+                  )}
+                </ul>
+                <span className="text-body-sm-medium text-brand-blue group-hover:translate-x-0.5 transition-transform">
+                  {ui.open} →
+                </span>
+              </div>
             </Link>
           );
         })}
       </div>
     </div>
-  );
-}
-
-function ModuleStrip({ planModules }: { planModules: string[] }) {
-  return (
-    <ul className="mt-md flex flex-wrap gap-xs">
-      {planModules.map((id) => {
-        const mod = mockModules.find((m) => m.id === id);
-        return (
-          <li
-            key={id}
-            className={cn(
-              "inline-flex items-center gap-xs px-xs py-1 rounded-md text-caption bg-surface text-charcoal",
-            )}
-          >
-            <Icon.Book />
-            <span>{mod?.name}</span>
-          </li>
-        );
-      })}
-    </ul>
   );
 }

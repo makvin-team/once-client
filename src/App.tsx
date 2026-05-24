@@ -11,7 +11,6 @@ import { LearnerDashboard } from "./pages/learner/Dashboard";
 import { LearnerPlans } from "./pages/learner/Plans";
 import { LearnerPlanDetail } from "./pages/learner/PlanDetail";
 import { LearnerModuleDetail } from "./pages/learner/ModuleDetail";
-import { LessonViewer } from "./pages/learner/LessonViewer";
 import { LearnerAssistant } from "./pages/learner/Assistant";
 import { LearnerFraud } from "./pages/learner/Fraud";
 import {
@@ -63,10 +62,6 @@ function App() {
                 <Route
                   path="plans/:planId/modules/:moduleId"
                   element={<LearnerModuleDetail />}
-                />
-                <Route
-                  path="plans/:planId/modules/:moduleId/lessons/:lessonId"
-                  element={<LessonViewer />}
                 />
                 <Route path="assistant" element={<LearnerAssistant />} />
                 <Route path="playground" element={<LearnerPlayground />} />
