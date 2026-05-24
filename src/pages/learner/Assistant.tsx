@@ -349,16 +349,23 @@ export function LearnerAssistant() {
           <div className="max-w-[760px] mx-auto py-xl">
             {activeSession && activeSession.messages.length > 0 ? (
               <ul className="flex flex-col gap-lg">
-                {activeSession.messages.map((m) => (
-                  <li key={m.id}>
-                    <MessageBubble
-                      message={m}
-                      onFeedback={(v) => setFeedback(m.id, v)}
-                      onFollowUp={(p) => sendPrompt(p)}
-                      copy={copy}
-                    />
-                  </li>
-                ))}
+                {activeSession.messages
+                  // Skip the empty assistant placeholder while it streams — the
+                  // TypingBubble stands in until the first token arrives, so we
+                  // don't show an empty card next to the loading indicator.
+                  .filter(
+                    (m) => !(m.role === "assistant" && m.text.length === 0),
+                  )
+                  .map((m) => (
+                    <li key={m.id}>
+                      <MessageBubble
+                        message={m}
+                        onFeedback={(v) => setFeedback(m.id, v)}
+                        onFollowUp={(p) => sendPrompt(p)}
+                        copy={copy}
+                      />
+                    </li>
+                  ))}
                 {showTyping && (
                   <li>
                     <TypingBubble label={copy.typing} />
