@@ -310,14 +310,6 @@ export function LearnerFraud() {
     });
   }
 
-  function pickRecommendedScenario(): FraudSimScenario {
-    const notStarted = scenarios.filter(
-      (s) => (statuses[s.id] ?? s.initialStatus) === "not_started",
-    );
-    const easy = notStarted.filter((s) => s.difficulty !== "advanced");
-    const high = easy.find((s) => s.riskLevel === "high");
-    return high ?? easy[0] ?? notStarted[0] ?? scenarios[0];
-  }
 
   function handlePlayBack() {
     setPlay(null);
@@ -388,7 +380,6 @@ export function LearnerFraud() {
     ? scenarios.find((s) => s.id === play.scenarioId) ?? null
     : null;
 
-  const recommended = pickRecommendedScenario();
   return (
     <div className="flex flex-col gap-section-sm animate-fade-in">
       <header>

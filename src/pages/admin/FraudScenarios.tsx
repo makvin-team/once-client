@@ -7,7 +7,7 @@ import { EmptyState } from "../../components/app/EmptyState";
 import { Icon } from "../../components/app/icons";
 import { Input } from "../../components/ui/Input";
 import { cn } from "../../lib/cn";
-import { fraudService, type AdminFraudScenario, type MultiLangValue, type UpdateFraudScenarioPayload } from "../../services/fraud.service";
+import { fraudService, type MultiLangValue, type UpdateFraudScenarioPayload } from "../../services/fraud.service";
 import type {
   FraudSimDifficulty,
   FraudSimRisk,
@@ -536,6 +536,7 @@ export function AdminFraudScenarios() {
   const [riskFilter, setRiskFilter] = useState<FraudSimRisk | "">("");
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setLoading(true);
     setError(null);
     fraudService.getScenarios(locale)

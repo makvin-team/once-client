@@ -29,8 +29,8 @@ export function useProfile() {
   }
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     void fetchProfile()
-  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
   const updateProfile = async (data: UpdateProfileRequest): Promise<boolean> => {

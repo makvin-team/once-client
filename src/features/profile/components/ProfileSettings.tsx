@@ -60,6 +60,7 @@ export function ProfileSettings() {
 
   useEffect(() => {
     if (profile) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setProfileForm({
         firstName: profile.firstName,
         lastName: profile.lastName,
@@ -70,6 +71,7 @@ export function ProfileSettings() {
 
   useEffect(() => {
     if (passwordSuccess) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setPasswordForm({ currentPassword: '', newPassword: '', confirmPassword: '' })
       setConfirmError(null)
     }

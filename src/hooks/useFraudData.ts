@@ -71,6 +71,7 @@ export function useFraudData(locale: string): UseFraudDataResult {
   useEffect(() => {
     if (!API_BASE_URL) return
 
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setLoading(true)
     Promise.all([
       fraudService.getScenarios(locale),
@@ -90,7 +91,6 @@ export function useFraudData(locale: string): UseFraudDataResult {
       .finally(() => {
         setLoading(false)
       })
-  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [locale])
 
   async function submitAttempt(payload: SubmitAttemptPayload): Promise<FraudAttemptRecord | null> {
