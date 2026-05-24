@@ -34,3 +34,7 @@ Thumbs.db
 
 # TypeScript
 *.tsbuildinfo
+
+# Large hero video — hosted externally, never committed
+public/*.MP4
+public/*.mp4

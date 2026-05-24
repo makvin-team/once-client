@@ -13,3 +13,7 @@ dist-ssr
 !README.md
 .DS_Store
 Thumbs.db
+
+# Hero demo video (large media — served from public/, not baked into image)
+public/*.MP4
+public/*.mp4

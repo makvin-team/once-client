@@ -74,6 +74,7 @@ jobs:
           labels: ${{ steps.meta.outputs.labels }}
           build-args: |
             VITE_API_BASE_URL=${{ vars.VITE_API_BASE_URL || 'https://api.onceai.uz' }}
+            VITE_HERO_VIDEO_URL=${{ vars.VITE_HERO_VIDEO_URL }}
           cache-from: type=gha,scope=once-client
           cache-to: type=gha,mode=max,scope=once-client
 

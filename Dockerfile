@@ -11,6 +11,11 @@ COPY . .
 ARG VITE_API_BASE_URL=https://api.onceai.uz
 ENV VITE_API_BASE_URL=$VITE_API_BASE_URL
 
+# URL of the externally-hosted hero demo video (CDN / object storage) so the
+# large media file never ships inside the image.
+ARG VITE_HERO_VIDEO_URL=
+ENV VITE_HERO_VIDEO_URL=$VITE_HERO_VIDEO_URL
+
 RUN npm run build
 
 FROM nginx:1.27-alpine AS runtime

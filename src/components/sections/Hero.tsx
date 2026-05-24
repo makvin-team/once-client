@@ -12,6 +12,13 @@ const badgeVariants = {
   rose: "tag-purple",
 } as const;
 
+// Hero demo video is hosted externally (CDN / object storage) so the ~40 MB
+// file never ships inside the repo or the Docker image. Set VITE_HERO_VIDEO_URL
+// at build time; falls back to a local public/ path for dev if you drop a copy.
+const HERO_VIDEO_URL =
+  (import.meta.env.VITE_HERO_VIDEO_URL as string | undefined)?.trim() ||
+  "/simulator-example.MP4";
+
 export function Hero() {
   const t = useT();
   const hero = t.hero;
@@ -168,7 +175,7 @@ function HeroVideo({ title }: { title: string }) {
       <video
         ref={videoRef}
         className="block w-full h-auto bg-surface-soft"
-        src="/simulator-example.MP4"
+        src={HERO_VIDEO_URL}
         autoPlay
         muted
         loop
