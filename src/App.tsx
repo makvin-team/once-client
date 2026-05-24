@@ -25,11 +25,11 @@ import {
 import { AdminLayout } from "./pages/admin/AdminLayout";
 import { AdminDashboard } from "./pages/admin/Dashboard";
 import { AdminUsers } from "./pages/admin/Users";
+import { AdminKnowledge } from "./pages/admin/Knowledge";
 import { AdminFraudScenarios } from "./pages/admin/FraudScenarios";
 import {
   AdminAIAssistant,
   AdminAssignments,
-  AdminKnowledge,
   AdminMockScenarios,
   AdminModules,
   AdminNotifications,
