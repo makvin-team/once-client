@@ -74,7 +74,7 @@ jobs:
           labels: ${{ steps.meta.outputs.labels }}
           build-args: |
             VITE_API_BASE_URL=${{ vars.VITE_API_BASE_URL || 'https://api.onceai.uz' }}
-            VITE_HERO_VIDEO_URL=${{ vars.VITE_HERO_VIDEO_URL }}
+            VITE_HERO_VIDEO_URL=${{ vars.VITE_HERO_VIDEO_URL || 'https://stage-api.edcom.uz/gateway/api-filefs/api/public/97c3483aaaa84228921a2e5f46cc780f' }}
           cache-from: type=gha,scope=once-client
           cache-to: type=gha,mode=max,scope=once-client
 
