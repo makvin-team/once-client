@@ -4,7 +4,7 @@
 
 import { API_BASE_URL, authFetch } from "./api";
 import { tokenStore } from "../auth/tokenStore";
-import type { Citation } from "./mockAI";
+import type { RegulatorySource } from "./citationParser";
 
 // ----- Server response shapes (once-server camelCase) -----
 
@@ -27,21 +27,16 @@ type MessageDto = {
 
 type Paged<T> = { items: T[]; total: number; page: number; size: number; pages: number };
 
-// snake_case keys: these come straight from ai-backend (once-server proxies them as-is).
-type RegulatorySource = {
-  document_id?: string;
-  source_id?: string;
-  doc_number?: string;
-  title?: string;
-  clause_label?: string;
-};
+// RegulatorySource (snake_case keys, straight from ai-backend — once-server
+// proxies them as-is) is defined in ./citationParser, which owns the citation
+// matching logic that consumes these fields.
 
 // ----- SSE event shapes (verbatim from ai-backend) -----
 
 export type StreamHandlers = {
   onToolCall?: (name: string, query: string) => void;
   onChunk: (token: string) => void;
-  onSources?: (citations: Citation[]) => void;
+  onSources?: (sources: { regulatory: RegulatorySource[]; files: string[] }) => void;
   onTruncated?: () => void;
   onDone: (conversationId: string, title: string | null) => void;
   onError: (message: string) => void;
@@ -52,15 +47,6 @@ function authHeaders(): Record<string, string> {
   const headers: Record<string, string> = { "Content-Type": "application/json" };
   if (tokens?.accessToken) headers.Authorization = `Bearer ${tokens.accessToken}`;
   return headers;
-}
-
-// Map ai-backend regulatory sources → the UI's Citation chip shape.
-function toCitation(s: RegulatorySource): Citation {
-  return {
-    docId: s.document_id ?? s.source_id ?? s.title ?? "source",
-    title: s.title ?? s.doc_number ?? "Manba",
-    section: s.clause_label,
-  };
 }
 
 /**
@@ -147,7 +133,8 @@ function handleSseEvent(rawEvent: string, handlers: StreamHandlers) {
       break;
     case "sources": {
       const reg = (evt.regulatory_sources as RegulatorySource[] | undefined) ?? [];
-      handlers.onSources?.(reg.map(toCitation));
+      const files = (evt.sources as string[] | undefined) ?? [];
+      handlers.onSources?.({ regulatory: reg, files });
       break;
     }
     case "truncated":
@@ -194,7 +181,8 @@ export async function listConversations(): Promise<ConversationSummary[]> {
 export type LoadedMessage = {
   role: "user" | "assistant";
   text: string;
-  citations?: Citation[];
+  regulatorySources?: RegulatorySource[];
+  sources?: string[];
   createdAt: string;
 };
 
@@ -210,7 +198,11 @@ export async function getMessages(conversationId: string): Promise<LoadedMessage
     out.push({
       role: "assistant",
       text: m.answer,
-      citations: (m.regulatorySources ?? []).map(toCitation),
+      regulatorySources: m.regulatorySources ?? [],
+      // ai-backend persists file sources as a ", "-joined string.
+      sources: m.sources
+        ? m.sources.split(",").map((s) => s.trim()).filter(Boolean)
+        : [],
       createdAt: m.createdAt,
     });
   }

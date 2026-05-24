@@ -2,7 +2,7 @@
 // ai-backend conversations (via once-server). A brand-new chat has no
 // conversationId until the first `done` event returns one.
 
-import type { Citation } from "./mockAI";
+import type { RegulatorySource } from "./citationParser";
 import {
   listConversations,
   getMessages,
@@ -13,7 +13,8 @@ export type Message = {
   id: string;
   role: "user" | "assistant";
   text: string;
-  citations?: ReadonlyArray<Citation>;
+  regulatorySources?: ReadonlyArray<RegulatorySource>;
+  sources?: ReadonlyArray<string>;
   followUps?: ReadonlyArray<string>;
   createdAt: string;
   feedback?: "up" | "down";
@@ -67,7 +68,8 @@ export async function fetchMessages(conversationId: string): Promise<Message[]> 
     id: makeId(),
     role: m.role,
     text: m.text,
-    citations: m.citations,
+    regulatorySources: m.regulatorySources,
+    sources: m.sources,
     createdAt: m.createdAt,
   }));
 }

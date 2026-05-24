@@ -18,6 +18,7 @@ import {
 } from "../../lib/assistantStore";
 import { streamChat, deleteConversation } from "../../lib/assistantApi";
 import { titleFromPrompt } from "../../lib/mockAI";
+import { AssistantAnswer } from "./AssistantAnswer";
 
 const GROUP_ORDER: SessionGroup[] = ["today", "yesterday", "thisWeek", "older"];
 
@@ -188,8 +189,12 @@ export function LearnerAssistant() {
         {
           onChunk: (token) =>
             patchAssistant((m) => ({ ...m, text: m.text + token })),
-          onSources: (citations) =>
-            patchAssistant((m) => ({ ...m, citations })),
+          onSources: ({ regulatory, files }) =>
+            patchAssistant((m) => ({
+              ...m,
+              regulatorySources: regulatory,
+              sources: files,
+            })),
           onDone: (conversationId, title) => {
             setSessions((prev) =>
               prev.map((s) =>
@@ -641,33 +646,14 @@ function MessageBubble({
         <AILogo size={18} on="light" />
       </div>
       <div className="flex-1 min-w-0">
-        <div className="rounded-2xl bg-surface px-md py-sm text-body-md text-ink whitespace-pre-line">
-          {message.text}
+        <div className="rounded-2xl bg-surface px-md py-sm text-body-md text-ink">
+          <AssistantAnswer
+            text={message.text}
+            regulatorySources={message.regulatorySources}
+            sources={message.sources}
+            sourcesLabel={copy.sourcesLabel}
+          />
         </div>
-
-        {message.citations && message.citations.length > 0 && (
-          <div className="mt-xs flex flex-wrap items-center gap-xs">
-            <span className="text-micro-uppercase uppercase text-stone tracking-wide">
-              {copy.sourcesLabel}:
-            </span>
-            {message.citations.map((c, i) => (
-              <span
-                key={`${c.docId}-${i}`}
-                className={cn(
-                  "inline-flex items-center gap-xs px-xs py-[2px] rounded-full pastel",
-                  "bg-surface-yellow text-yellow-dark text-caption-bold",
-                )}
-                title={c.section}
-              >
-                <Icon.Doc />
-                {c.title}
-                {c.section && (
-                  <span className="text-stone font-normal">· {c.section}</span>
-                )}
-              </span>
-            ))}
-          </div>
-        )}
 
         {message.followUps && message.followUps.length > 0 && (
           <ul className="mt-xs flex flex-wrap gap-xs">
